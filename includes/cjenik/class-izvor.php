@@ -61,6 +61,7 @@ final class Izvor {
 	private static function stupci(): string {
 		return "p.ID AS entity_id,
 			p.post_type,
+			p.post_parent,
 			COALESCE( NULLIF( p.post_title, '' ), par.post_title ) AS naziv,
 			COALESCE( l.sku, '' ) AS sku,
 			mp.meta_value AS price,
@@ -90,7 +91,7 @@ final class Izvor {
 	public static function komad( int $zadnji_id, int $velicina ): array {
 		global $wpdb;
 
-		return (array) $wpdb->get_results(
+		$redci = (array) $wpdb->get_results(
 			$wpdb->prepare(
 				self::upit(
 					self::stupci(),
@@ -101,6 +102,21 @@ final class Izvor {
 				$velicina
 			) // phpcs:ignore
 		);
+
+		/*
+		 * Meta cijelog komada u JEDNOM upitu.
+		 *
+		 * Zapis varijacije treba njezina obiljezja (`attribute_*`) da bi se u cjeniku
+		 * razlikovala od sestara. Bez ovoga bi svaki `get_post_meta()` isao zasebno —
+		 * 200 upita po komadu umjesto jednog.
+		 */
+		if ( ! empty( $redci ) ) {
+			update_meta_cache( 'post', array_map( static function ( $r ) {
+				return (int) $r->entity_id;
+			}, $redci ) );
+		}
+
+		return $redci;
 	}
 
 	/**

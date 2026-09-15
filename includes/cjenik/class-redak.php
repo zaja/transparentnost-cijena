@@ -42,6 +42,27 @@ defined( 'ABSPATH' ) || exit;
 
 final class Redak {
 
+	/** @var \WC_Product|null|false objekt tekuceg zapisa; false = pokusano i nema ga */
+	private static $proizvod = null;
+
+	/**
+	 * Objekt proizvoda za tekuci zapis, ili null.
+	 *
+	 * Cita se lijeno: zapis kojemu ne treba (a vecina polja ne treba) ne placa
+	 * dohvat.
+	 *
+	 * @return \WC_Product|null
+	 */
+	private static function proizvod( $r ) {
+		if ( null === self::$proizvod ) {
+			self::$proizvod = function_exists( 'wc_get_product' )
+				? ( wc_get_product( (int) $r->entity_id ) ?: false )
+				: false;
+		}
+
+		return ( false === self::$proizvod ) ? null : self::$proizvod;
+	}
+
 	/**
 	 * Sastavi zapis iz retka upita.
 	 *
@@ -50,6 +71,11 @@ final class Redak {
 	 */
 	public static function iz( $r ): array {
 		$zapis = array();
+
+		// Objekt proizvoda treba trima poljima (naziv varijacije, porez). Dohvaca se
+		// jednom po zapisu i zaboravlja — generator ide u komadima od 200, pa u
+		// memoriji nikad ne stoji vise od jednog komada.
+		self::$proizvod = null;
 
 		foreach ( array_keys( Config::SHEMA_CJENIKA ) as $kljuc ) {
 			$metoda = 'polje_' . $kljuc;
@@ -77,12 +103,75 @@ final class Redak {
 
 	/* ============================= POLJA ============================= */
 
+	/**
+	 * Naziv artikla — kod varijacije s obiljezjima po kojima se prepoznaje.
+	 *
+	 * WooCommerce varijaciji NE mijenja naslov: majica S, M i L sve tri nose ime
+	 * roditelja. U cjeniku to znaci vise redaka istog imena s razlicitim cijenama —
+	 * citatelj ne moze znati koji je koji, a to je 55 % ove datoteke (izmjereno:
+	 * 1894 od 3417 zapisa).
+	 *
+	 * Obiljezja se dopisuju samo kad ih ima. Varijacija bez ijednog razlikovnog
+	 * obiljezja ostaje na imenu roditelja — dopisati praznu zagradu ne bi pomoglo.
+	 */
 	private static function polje_naziv( $r ): string {
-		return (string) $r->naziv;
+		$naziv = (string) $r->naziv;
+
+		if ( 'product_variation' !== (string) $r->post_type ) {
+			return $naziv;
+		}
+
+		if ( ! function_exists( 'wc_get_formatted_variation' ) ) {
+			return $naziv;
+		}
+
+		/*
+		 * Obiljezja se citaju IZ META, ne iz objekta proizvoda.
+		 *
+		 * `wc_get_formatted_variation()` prima i polje: sam razrijesi slug termina u
+		 * ime i kljuc atributa u natpis. Objekt proizvoda za to nije potreban, a
+		 * njegov dohvat je jedini skup dio — s njim generiranje traje 15 s, bez njega
+		 * sekundu. Meta cijelog komada je vec u predmemoriji (vidi Izvor::komad).
+		 */
+		$atributi = array();
+
+		foreach ( (array) get_post_meta( (int) $r->entity_id ) as $kljuc => $vrijednosti ) {
+			if ( 0 !== strpos( $kljuc, 'attribute_' ) ) {
+				continue;
+			}
+
+			$atributi[ $kljuc ] = is_array( $vrijednosti ) ? (string) reset( $vrijednosti ) : (string) $vrijednosti;
+		}
+
+		if ( empty( $atributi ) ) {
+			return $naziv;
+		}
+
+		$obiljezja = wc_get_formatted_variation( $atributi, true, true );
+
+		return ( '' === trim( (string) $obiljezja ) ) ? $naziv : $naziv . ' — ' . $obiljezja;
 	}
 
+	/**
+	 * Sifra artikla.
+	 *
+	 * Obvezan podatak. Artikl bez sifre i dalje mora biti jednoznacno oznacen u
+	 * datoteci koju cita stroj — prazno polje znaci da se redak ne moze povezati ni
+	 * s cim. Interni ID je jedina oznaka koja sigurno postoji.
+	 *
+	 * Oblik `ID-<roditelj>-<artikl>` da se vidi da nije trgovceva sifra nego nasa
+	 * zamjena, i da se varijacije istog proizvoda drze zajedno.
+	 */
 	private static function polje_sifra( $r ): string {
-		return (string) $r->sku;
+		$sku = trim( (string) $r->sku );
+
+		if ( '' !== $sku ) {
+			return $sku;
+		}
+
+		$roditelj = (int) ( $r->post_parent ?? 0 );
+
+		return 'ID-' . ( $roditelj > 0 ? $roditelj . '-' : '' ) . (int) $r->entity_id;
 	}
 
 	/**
@@ -130,7 +219,7 @@ final class Redak {
 			return null;
 		}
 
-		$cijena = self::novac( $r->price );
+		$cijena = self::novac( self::s_porezom( $r, $r->price ) );
 
 		if ( '' === $cijena ) {
 			return '';
@@ -150,7 +239,7 @@ final class Redak {
 	}
 
 	private static function polje_maloprodajna_cijena( $r ): string {
-		return self::novac( $r->price );
+		return self::novac( self::s_porezom( $r, $r->price ) );
 	}
 
 	/**
@@ -181,7 +270,7 @@ final class Redak {
 	}
 
 	private static function polje_sidrena_cijena( $r ): string {
-		return self::novac( $r->sidrena_cijena );
+		return self::novac( self::s_porezom( $r, $r->sidrena_cijena ) );
 	}
 
 	/**
@@ -317,6 +406,65 @@ final class Redak {
 		}
 
 		return Config::POP_AKCIJSKA;
+	}
+
+	/**
+	 * Iznos s porezom — onaj koji kupac stvarno plati.
+	 *
+	 * ZASTO SE NE SMIJE OBJAVITI `_price` KAKAV JEST
+	 *
+	 * WooCommerce cijene sprema onako kako ih je trgovac unio: sa PDV-om ili bez
+	 * njega, ovisno o postavci. Na trgovini koja ih unosi BEZ poreza `_price` je
+	 * neto iznos — a kupac na blagajni plati bruto. Objaviti neto znacilo bi u
+	 * propisanoj datoteci navesti cijenu koja se ne naplacuje.
+	 *
+	 * Na trgovini koja cijene unosi s porezom pretvorba ne mijenja nista, pa se
+	 * poziva bezuvjetno: postavka se moze promijeniti, a uvjet koji bi je citao
+	 * morao bi se pamtiti na tri mjesta.
+	 *
+	 * Vrijedi za SVE iznose u datoteci, ne samo za maloprodajnu — sidrena cijena i
+	 * cijena po jedinici mjere moraju biti na istoj osnovi, inace se usporeduju
+	 * dvije razlicite stvari.
+	 *
+	 * NA NETO TRGOVINI OVO ZAOKRUZUJE, I TO JE ISPRAVNO
+	 *
+	 * WooCommerce bruto iznos racuna i zaokruzuje na dvije decimale — a upravo taj
+	 * zaokruzen iznos kupac i plati. To nije tiho popravljanje nase brojke nego
+	 * cijena s blagajne. Nalaz o cijenama s vise decimala i dalje cita katalog, ne
+	 * objavljenu vrijednost, pa se problem u podacima time ne sakriva.
+	 *
+	 * @return string|null
+	 */
+	private static function s_porezom( $r, $vrijednost ) {
+		if ( null === $vrijednost || '' === $vrijednost ) {
+			return $vrijednost;
+		}
+
+		/*
+		 * Trgovina koja cijene unosi S porezom vec ima bruto iznos u `_price` — nema
+		 * se sto pretvarati. Preskace se prije dohvata objekta proizvoda, jer je taj
+		 * dohvat jedini skup dio: s njim generiranje traje 15 s, bez njega 1 s.
+		 *
+		 * Ne gleda se kupceva porezna zona namjerno. Cjenik je izjava trgovine o
+		 * njezinoj cijeni, ne racun za odredenog kupca.
+		 */
+		if ( function_exists( 'wc_prices_include_tax' ) && wc_prices_include_tax() ) {
+			return $vrijednost;
+		}
+
+		$p = self::proizvod( $r );
+
+		if ( ! $p || ! function_exists( 'wc_get_price_including_tax' ) ) {
+			return $vrijednost;
+		}
+
+		return (string) wc_get_price_including_tax(
+			$p,
+			array(
+				'qty'   => 1,
+				'price' => $vrijednost,
+			)
+		);
 	}
 
 	/**
