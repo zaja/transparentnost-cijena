@@ -54,17 +54,31 @@ final class Admin {
 	 * aktivirao dodatak treba prvo postavljanje, a onaj koji ga ima treba stanje.
 	 * Postavke su druga stavka jer se otvaraju rijetko.
 	 *
+	 * BEZ <strong>, I BEZ BROJCANIH KLJUCEVA
+	 *
+	 * WordPress u istoj celiji ispisuje ime dodatka kao `<strong>`, pa ga stilom
+	 * `td.plugin-title strong { display: block }` stavlja u vlastiti redak. Isti
+	 * stil pogodi i svaki nas `<strong>` — veza se otrgne u novi redak, a
+	 * razdjelnik ostane iza nje.
+	 *
+	 * Kljucevi su imenovani jer `row_actions()` svaku vezu omota u
+	 * `<span class='$kljuc'>`. Brojcani kljuc daje `class='0'`, sto je klasa koja
+	 * se ne moze ni odabrati u CSS-u.
+	 *
 	 * @param string[] $veze
 	 * @return string[]
 	 */
 	public static function veze_u_popisu( $veze ): array {
+		$prvi = Carobnjak::gotov() ? self::STRANICA_STANJE : self::STRANICA_CAROBNJAK;
+
 		$nase = array(
-			sprintf(
-				'<a href="%s"><strong>%s</strong></a>',
-				esc_url( self::url( Carobnjak::gotov() ? self::STRANICA_STANJE : self::STRANICA_CAROBNJAK ) ),
+			Config::PREFIX . '-pocetak'  => sprintf(
+				'<a href="%s" aria-label="%s">%s</a>',
+				esc_url( self::url( $prvi ) ),
+				esc_attr__( 'Otvori ekran dodatka Cjenovna transparentnost', Config::TEXT_DOMAIN ),
 				esc_html( Carobnjak::gotov() ? __( 'Stanje', Config::TEXT_DOMAIN ) : __( 'Prvo postavljanje', Config::TEXT_DOMAIN ) )
 			),
-			sprintf(
+			Config::PREFIX . '-postavke' => sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( self::url( self::STRANICA_POSTAVKE ) ),
 				esc_html__( 'Postavke', Config::TEXT_DOMAIN )
