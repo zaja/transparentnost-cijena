@@ -1,0 +1,482 @@
+/* Cjenovna transparentnost — dijagnostika */
+.cjtr-uvod { font-size: 14px; color: #50575e; max-width: 60em; }
+
+.cjtr-skupno {
+	padding: 14px 18px; margin: 16px 0 24px; border-radius: 4px;
+	border-left: 5px solid #2271b1; background: #fff; font-size: 15px;
+}
+.cjtr-kartica {
+	background: #fff; border: 1px solid #dcdcde; border-left-width: 5px;
+	border-radius: 4px; padding: 4px 20px 16px; margin: 0 0 18px; max-width: 60em;
+}
+.cjtr-kartica h2 { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+
+.cjtr-znak { width: 12px; height: 12px; border-radius: 50%; flex: 0 0 12px; }
+.cjtr-oznaka {
+	margin-left: auto; font-size: 11px; font-weight: 600; text-transform: uppercase;
+	letter-spacing: .04em; padding: 3px 9px; border-radius: 10px; background: #f0f0f1; color: #50575e;
+}
+
+.cjtr-status-ok         { border-left-color: #00a32a; }
+.cjtr-status-ok .cjtr-znak      { background: #00a32a; }
+.cjtr-status-ok .cjtr-oznaka    { background: #edfaef; color: #00733c; }
+
+.cjtr-status-upozorenje { border-left-color: #dba617; }
+.cjtr-status-upozorenje .cjtr-znak   { background: #dba617; }
+.cjtr-status-upozorenje .cjtr-oznaka { background: #fcf9e8; color: #8a6116; }
+
+.cjtr-status-lose       { border-left-color: #d63638; }
+.cjtr-status-lose .cjtr-znak    { background: #d63638; }
+.cjtr-status-lose .cjtr-oznaka  { background: #fcf0f1; color: #8a2424; }
+
+.cjtr-status-info       { border-left-color: #2271b1; }
+.cjtr-status-info .cjtr-znak    { background: #2271b1; }
+
+.cjtr-stavke { width: 100%; border-collapse: collapse; margin: 8px 0 12px; }
+.cjtr-stavke th, .cjtr-stavke td {
+	text-align: left; padding: 6px 10px 6px 0; vertical-align: top;
+	border-bottom: 1px solid #f0f0f1; font-weight: 400;
+}
+.cjtr-stavke th { color: #50575e; width: 42%; }
+.cjtr-stavke td { font-family: Consolas, Monaco, monospace; font-size: 13px; word-break: break-word; }
+
+.cjtr-blok { margin: 12px 0; }
+.cjtr-blok h3 { font-size: 13px; margin: 0 0 6px; }
+.cjtr-blok pre {
+	background: #f6f7f7; border: 1px solid #dcdcde; border-radius: 3px;
+	padding: 10px 12px; overflow-x: auto; font-size: 12.5px; margin: 0; white-space: pre;
+}
+
+.cjtr-znacenje, .cjtr-postupak { max-width: 56em; line-height: 1.6; margin: 10px 0 0; }
+.cjtr-postupak { padding: 10px 12px; background: #f6f7f7; border-radius: 3px; }
+
+#cjtr-izvjestaj {
+	width: 100%; font-family: Consolas, Monaco, monospace; font-size: 12px;
+	white-space: pre; overflow-wrap: normal; overflow-x: auto;
+}
+.cjtr-kopirano { margin-left: 10px; color: #00733c; font-weight: 600; }
+
+/* --- obrada u pozadini --- */
+.cjtr-traka {
+	height: 18px; background: #f0f0f1; border-radius: 9px; overflow: hidden;
+	margin: 12px 0 8px; border: 1px solid #dcdcde;
+}
+.cjtr-traka-ispuna {
+	height: 100%; background: #2271b1; width: 0; transition: width .25s ease;
+}
+.cjtr-napredak { font-family: Consolas, Monaco, monospace; font-size: 13px; color: #50575e; }
+.cjtr-gresaka { color: #d63638; font-weight: 600; margin-left: 10px; }
+.cjtr-radnje { margin: 14px 0 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.cjtr-log { margin-top: 14px; }
+.cjtr-log summary { cursor: pointer; font-weight: 600; color: #2271b1; }
+.cjtr-log .cjtr-stavke th { width: 30%; font-family: Consolas, Monaco, monospace; font-size: 12px; }
+.cjtr-posao h2 { justify-content: flex-start; }
+
+/* --- pregled dodatnih cijena --- */
+.cjtr-skupina {
+	padding: 12px 0; border-bottom: 1px solid #f0f0f1;
+}
+.cjtr-skupina:last-child { border-bottom: 0; }
+.cjtr-skupina h3 {
+	display: flex; align-items: center; gap: 10px;
+	margin: 0 0 4px; font-size: 14px;
+}
+.cjtr-skupina p { margin: 0; color: #50575e; max-width: 56em; line-height: 1.6; }
+.cjtr-skupina .cjtr-oznaka { margin-left: auto; }
+
+/* --- stanje poslova --- */
+.cjtr-izvrseno {
+	font-size: 13px; color: #50575e; margin: 6px 0 0;
+	padding-left: 18px; position: relative;
+}
+.cjtr-izvrseno::before {
+	content: "\2713"; position: absolute; left: 0; color: #00a32a; font-weight: 700;
+}
+.cjtr-zapreka {
+	margin: 10px 0 0; padding: 10px 12px; background: #f6f7f7;
+	border-left: 3px solid #dcdcde; border-radius: 3px;
+	font-size: 13px; color: #50575e; max-width: 56em; line-height: 1.6;
+}
+.cjtr-radnje .button[disabled] { pointer-events: none; }
+
+/* Granica odgovornosti — vidljiva, ali ne vice. */
+.cjtr-opseg {
+	margin: 24px 0 0;
+	padding-top: 14px;
+	border-top: 1px solid #dcdcde;
+	color: #646970;
+	font-size: 12px;
+	max-width: 760px;
+}
+
+/* Ponisteni posao — zelena oznaka GOTOVO mora nestati.
+   Upravo je ona jednom navela na zakljucak da su podaci upisani. */
+.cjtr-oznaka-ponisteno {
+	background: #f6f7f7;
+	color: #646970;
+	border: 1px solid #c3c4c7;
+	text-decoration: line-through;
+}
+.cjtr-ponisteno {
+	margin: 8px 0 0;
+	padding: 10px 12px;
+	border-left: 4px solid #dba617;
+	background: #fcf9e8;
+	color: #50575e;
+	font-size: 13px;
+}
+.cjtr-ponisteno strong { color: #1d2327; }
+
+/* Primjer uz granicu odgovornosti — konkretan slucaj se prepozna, nacelo ne. */
+.cjtr-opseg-primjer {
+	display: inline-block;
+	margin-top: 6px;
+	color: #8c8f94;
+	font-style: italic;
+}
+
+/* ---------------------------------------------------------------------------
+   Ekran obrade: redoslijed, ne popis.
+   Devet jednakih kartica u nizu ne kazu sto kliknuti prvo.
+   --------------------------------------------------------------------------- */
+
+/* Jedan redak na vrhu: sto je sljedece. */
+.cjtr-sljedece {
+	margin: 16px 0 24px;
+	padding: 16px 20px;
+	border-radius: 4px;
+	border-left: 4px solid #2271b1;
+	background: #fff;
+	box-shadow: 0 1px 1px rgba(0,0,0,.04);
+}
+.cjtr-sljedece-gotovo { border-left-color: #00a32a; }
+.cjtr-sljedece-tekst {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: #1d2327;
+}
+.cjtr-sljedece-brojac {
+	margin: 6px 0 0;
+	color: #646970;
+	font-size: 13px;
+}
+
+/* Skupine */
+.cjtr-skupina { margin: 0 0 28px; }
+.cjtr-skupina-naslov {
+	font-size: 13px;
+	text-transform: uppercase;
+	letter-spacing: .06em;
+	color: #646970;
+	margin: 0 0 2px;
+	padding: 0;
+}
+.cjtr-skupina-uvod {
+	margin: 0 0 12px;
+	color: #646970;
+	font-size: 13px;
+}
+
+/* Ponistavanje stoji sklopljeno — ne nudi se onome tko ga ne treba. */
+.cjtr-skupina-napredno > summary {
+	cursor: pointer;
+	padding: 10px 0;
+	color: #646970;
+	font-size: 13px;
+	border-top: 1px solid #dcdcde;
+}
+.cjtr-skupina-napredno[open] > summary { margin-bottom: 10px; }
+
+/* Redni broj koraka */
+.cjtr-posao-zaglavlje {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+.cjtr-korak {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	font-size: 13px;
+	font-weight: 600;
+	flex: 0 0 auto;
+}
+.cjtr-korak-ceka { background: #2271b1; color: #fff; }
+.cjtr-korak-gotov { background: #e6f3e8; color: #00a32a; }
+.cjtr-posao-naziv { flex: 1 1 auto; }
+
+/* Odradena priprema: sklonjena s puta, ali ne nestala. */
+.cjtr-posao-sazeto {
+	padding: 12px 16px;
+	background: #fbfbfc;
+	border-color: #e6e6e8;
+}
+.cjtr-posao-sazeto h2 { font-size: 14px; font-weight: 400; margin: 0; color: #50575e; }
+.cjtr-posao-sazeto .cjtr-izvrseno { margin: 4px 0 0 36px; font-size: 12px; color: #8c8f94; }
+.cjtr-posao-sazeto .cjtr-log { margin: 6px 0 0 36px; }
+.cjtr-posao-sazeto .cjtr-log > summary { font-size: 12px; }
+
+/* Posao koji jos nije na redu */
+.cjtr-posao-ceka { opacity: .72; }
+.cjtr-ceka {
+	margin: 8px 0 0;
+	padding: 10px 12px;
+	border-left: 4px solid #c3c4c7;
+	background: #f6f7f7;
+	color: #50575e;
+	font-size: 13px;
+}
+.cjtr-ceka strong { color: #1d2327; }
+.cjtr-posao-opis { margin: 8px 0; }
+.cjtr-upozorenje { color: #996800; }
+
+/* Odradena priprema: kvacica, ime, datum — i nista sto trazi paznju. */
+.cjtr-posao-sazeto .cjtr-izvrseno { margin: 2px 0 0 36px; font-size: 12px; color: #8c8f94; }
+.cjtr-posao-sazeto .cjtr-log { margin: 4px 0 0 36px; }
+.cjtr-posao-sazeto .cjtr-log > summary { font-size: 12px; color: #646970; }
+.cjtr-posao-sazeto .cjtr-log[open] > summary { margin-bottom: 8px; }
+.cjtr-posao-sazeto .cjtr-log .cjtr-izvrseno { margin-left: 0; }
+
+/* Ponovno pokretanje odradenog koraka: poveznica, ne poziv na akciju. */
+.cjtr-radnje-sporedno { margin-top: 10px; }
+.cjtr-radnje-sporedno .button-link {
+	background: none;
+	border: 0;
+	padding: 0;
+	color: #2271b1;
+	text-decoration: underline;
+	cursor: pointer;
+	font-size: 12px;
+}
+.cjtr-radnje-sporedno .button-link:hover { color: #135e96; }
+.cjtr-radnje-sporedno .button-link[disabled] {
+	color: #a7aaad;
+	text-decoration: none;
+	cursor: not-allowed;
+}
+
+/* --------------------------------------------------------------------------
+   Podaci o proizvodima: unos u retku.
+   Katalog od 3623 retka popunjava se ovdje, pa svaki klik manje vrijedi.
+   -------------------------------------------------------------------------- */
+
+.cjtr-unos td { vertical-align: top; padding: 8px 10px; }
+.cjtr-unos input[type="text"] { padding: 3px 6px; }
+.cjtr-unos small { color: #8c8f94; font-size: 11px; }
+.cjtr-unos code { font-size: 11px; }
+.cjtr-np label { display: block; font-size: 11px; color: #646970; white-space: nowrap; }
+
+.cjtr-filtri { margin: 12px 0; }
+.cjtr-filtar {
+	display: inline-block;
+	padding: 3px 10px;
+	margin: 0 6px 6px 0;
+	border: 1px solid #dcdcde;
+	border-radius: 12px;
+	background: #fff;
+	color: #50575e;
+	text-decoration: none;
+	font-size: 12px;
+}
+.cjtr-filtar:hover { border-color: #2271b1; color: #2271b1; }
+.cjtr-filtar-aktivan { background: #2271b1; border-color: #2271b1; color: #fff; }
+.cjtr-filtar-aktivan:hover { color: #fff; }
+
+/* Prijedlog iz dostavne tezine — pitanje, ne tvrdnja. */
+.cjtr-prijedlog { color: #996800; font-style: italic; }
+
+/* Upute uz gumb za preuzimanje — ondje ih korisnik cita, ne u datoteci. */
+.cjtr-upute {
+	margin: 4px 0 0;
+	max-width: 760px;
+	color: #646970;
+	font-size: 12px;
+}
+
+/* =====================================================================
+   SUCELJE NAKON REBUILDA: stanje, nalazi, carobnjak, postavke.
+
+   Nacelo: kad sve radi, ekran mora biti kratak i dosadan. Boja se koristi
+   stedljivo — administrator koji svaki dan vidi crveno prestane ga citati.
+   ===================================================================== */
+
+/* --- jedna recenica na vrhu --- */
+.cjtr-sazetak {
+	margin: 16px 0 20px;
+	padding: 14px 18px;
+	border-radius: 4px;
+	border-left: 4px solid #dcdcde;
+	background: #fff;
+}
+.cjtr-sazetak-ok   { border-left-color: #00a32a; background: #f0f8f1; }
+.cjtr-sazetak-radi { border-left-color: #dba617; background: #fcf9e8; }
+.cjtr-sazetak-tekst { margin: 0; font-size: 15px; font-weight: 600; }
+.cjtr-sazetak-sitno { margin: 8px 0 0; font-size: 12px; color: #646970; }
+.cjtr-sazetak-sitno a { margin-right: 14px; }
+
+/* --- statusni redci --- */
+.cjtr-stanje-redci { border-collapse: collapse; margin: 0 0 24px; max-width: 900px; width: 100%; }
+.cjtr-stanje-redci th,
+.cjtr-stanje-redci td { text-align: left; padding: 8px 12px 8px 0; border-bottom: 1px solid #f0f0f1; vertical-align: top; }
+.cjtr-stanje-redci th { width: 180px; font-weight: 600; color: #50575e; }
+
+.cjtr-znak-ok::before         { content: "\2713"; color: #00a32a; font-weight: 700; margin-right: 6px; }
+.cjtr-znak-lose::before       { content: "\2715"; color: #d63638; font-weight: 700; margin-right: 6px; }
+.cjtr-znak-djelomicno::before { content: "\25D1"; color: #dba617; margin-right: 6px; }
+
+.cjtr-sitno { color: #8c8f94; font-size: 12px; }
+
+/* Adresa mora biti i klikabilna i kopirljiva. */
+.cjtr-adresa {
+	width: 430px;
+	max-width: 100%;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	background: #f6f7f7;
+}
+
+/* --- nalazi --- */
+.cjtr-nalazi-naslov { margin: 26px 0 12px; font-size: 15px; }
+.cjtr-nalazi { display: block; }
+
+.cjtr-nalaz {
+	background: #fff;
+	border: 1px solid #dcdcde;
+	border-left-width: 4px;
+	border-radius: 4px;
+	padding: 14px 18px;
+	margin: 0 0 12px;
+	max-width: 900px;
+}
+.cjtr-nalaz-zapreka { border-left-color: #d63638; }
+.cjtr-nalaz-vazno   { border-left-color: #dba617; }
+.cjtr-nalaz-savjet  { border-left-color: #a7aaad; }
+
+.cjtr-nalaz-oznaka {
+	margin: 0 0 4px;
+	font-size: 10px;
+	letter-spacing: .08em;
+	text-transform: uppercase;
+	font-weight: 700;
+	color: #8c8f94;
+}
+.cjtr-nalaz-zapreka .cjtr-nalaz-oznaka { color: #d63638; }
+.cjtr-nalaz-vazno .cjtr-nalaz-oznaka   { color: #996800; }
+
+.cjtr-nalaz-naslov   { margin: 0 0 6px; font-size: 14px; font-weight: 600; }
+.cjtr-nalaz-opis     { margin: 0 0 8px; color: #50575e; max-width: 70ch; }
+.cjtr-nalaz-postupak { margin: 0 0 10px; color: #50575e; max-width: 70ch; }
+
+/* Doslovan tekst za kopiranje — cron redak stoji u nalazu, ne u dokumentaciji. */
+.cjtr-nalaz-doslovno-naslov { margin: 10px 0 4px; font-size: 12px; font-weight: 600; color: #50575e; }
+.cjtr-nalaz-doslovno {
+	width: 100%;
+	max-width: 860px;
+	font-family: Consolas, Monaco, monospace;
+	font-size: 12px;
+	line-height: 1.5;
+	background: #f6f7f7;
+	border: 1px solid #dcdcde;
+	resize: vertical;
+}
+.cjtr-nalaz-sitno { margin: 4px 0 0; font-size: 11px; color: #8c8f94; }
+
+.cjtr-nalaz-radnje { margin: 10px 0 0; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.cjtr-nalaz-obrazac { display: inline; margin: 0; }
+.cjtr-nalaz-popis { font-size: 12px; }
+
+/* --- carobnjak --- */
+.cjtr-koraci {
+	list-style: none;
+	counter-reset: korak;
+	margin: 18px 0 20px;
+	padding: 0;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.cjtr-koraci li {
+	counter-increment: korak;
+	padding: 6px 14px 6px 34px;
+	border: 1px solid #dcdcde;
+	border-radius: 16px;
+	background: #fff;
+	font-size: 12px;
+	color: #8c8f94;
+	position: relative;
+}
+.cjtr-koraci li::before {
+	content: counter( korak );
+	position: absolute;
+	left: 10px;
+	font-weight: 700;
+}
+.cjtr-korak-tekuci { border-color: #2271b1 !important; color: #2271b1 !important; font-weight: 600; }
+.cjtr-korak-gotov  { color: #00a32a !important; border-color: #b8e6c1 !important; }
+
+.cjtr-kartica-glavna { border-left: 4px solid #2271b1; }
+
+/* Zasto, ne samo sto. */
+.cjtr-zasto {
+	margin: 0 0 16px;
+	max-width: 74ch;
+	color: #50575e;
+	font-size: 14px;
+	line-height: 1.6;
+}
+.cjtr-pitanje { margin: 14px 0 4px; font-size: 14px; }
+
+.cjtr-ponuda {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 14px 18px;
+	margin: 0 0 14px;
+	background: #fbfbfc;
+}
+.cjtr-ponuda h3 { margin: 0 0 8px; font-size: 14px; }
+.cjtr-ponuda p { max-width: 74ch; }
+.cjtr-ponuda-izjava { background: #fcf9e8; border-color: #f0e1a0; }
+
+/* Izjava se potvrduje, ne klikne usput. */
+.cjtr-izjava-tekst {
+	font-size: 14px;
+	font-weight: 600;
+	background: #fff;
+	border: 1px solid #f0e1a0;
+	border-radius: 3px;
+	padding: 10px 12px;
+	max-width: 74ch;
+}
+.cjtr-carobnjak-kraj { margin-top: 18px; }
+
+.cjtr-napomena {
+	margin: 10px 0;
+	padding: 10px 14px;
+	background: #fcf9e8;
+	border-left: 3px solid #dba617;
+	max-width: 76ch;
+	color: #50575e;
+}
+
+/* --- postavke --- */
+.cjtr-postavke { border-collapse: collapse; width: 100%; max-width: 900px; }
+.cjtr-postavke th,
+.cjtr-postavke td { text-align: left; padding: 10px 14px 10px 0; vertical-align: top; border-bottom: 1px solid #f0f0f1; }
+.cjtr-postavke th { width: 220px; font-weight: 600; color: #50575e; }
+.cjtr-postavke p { margin: 4px 0 0; max-width: 70ch; }
+
+/* --- napredno --- */
+.cjtr-napredno-popis .cjtr-kartica { max-width: 900px; }
+.cjtr-napredno-popis h2 { font-size: 14px; margin: 0 0 6px; }
+.cjtr-napredno-popis p { margin: 0 0 6px; max-width: 76ch; color: #50575e; }
+
+.cjtr-granica { margin: 34px 0 24px; border: 0; border-top: 2px solid #dcdcde; max-width: 900px; }
+.cjtr-tanka { margin: 16px 0; border: 0; border-top: 1px solid #f0f0f1; max-width: 900px; }
+.cjtr-podnozje-veze { margin: 26px 0 0; font-size: 12px; color: #8c8f94; }
+.cjtr-stranicenje { margin: 12px 0; font-size: 12px; color: #646970; }
+.cjtr-stranicenje a { margin-left: 10px; }

@@ -1,0 +1,21 @@
+# Dodatak ne stvara ni jednu datoteku u vlastitoj mapi — objavljeni cjenik
+# ide u wp-content/uploads. Ovdje stoje samo uobicajeni artefakti alata.
+.DS_Store
+Thumbs.db
+*.log
+*.zip
+node_modules/
+vendor/
+
+# --------------------------------------------------------------------------
+# Radni dokumenti projekta NE idu u repozitorij dodatka.
+#
+# Analiza, plan opsega i runbook pisani su za jednu konkretnu trgovinu: nose
+# njezinu domenu, njezine brojke i zapis o tome gdje nije bila uskladena. To
+# je gradivo projekta, ne dokumentacija proizvoda.
+#
+# Ostaje samo ono sto vrijedi za svakoga tko dodatak instalira.
+# --------------------------------------------------------------------------
+*.md
+!README.md
+!PRVO-POSTAVLJANJE.md

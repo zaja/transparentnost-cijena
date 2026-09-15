@@ -1,0 +1,133 @@
+/* Cjenovna transparentnost — dodatna cijena uz proizvod.
+
+   NACELO: dodatna cijena je REFERENCA, ne ponuda.
+
+   Kupac na kartici vidi dvije brojke. Jedna je ono sto ce platiti, druga je ono
+   sto je cijena bila na odredeni datum. Ako obje izgledaju jednako vazno, citaju
+   se kao dvije cijene istog artikla — a to je tocno nesporazum koji ova mjera
+   treba sprijeciti. Zato je ovdje sve prigusenije: boja, i nista drugo osim boje
+   i velicine. Sadrzaj i uvjeti prikaza nisu stvar stila.
+
+   ZASTO !important
+
+   Boju i velicinu brojke ne postavlja tema nego dodatni CSS same trgovine
+   (Customizer → Dodatni CSS), koji se ispisuje u <head> POSLIJE svih ucitanih
+   stilova. Na ovoj trgovini glasi:
+
+       span.amount { color: rgb(221,74,31); font-size: 1.3em; }
+
+   To je pravilo nad samim elementom, pa ga nasljedivanje boje s naseg omotaca ne
+   moze nadjacati ni pri kojoj specificnosti — nasljedena vrijednost gubi od svake
+   izravne deklaracije. Dodatni CSS je vlasnikov i ne diramo ga. Ostaje `!important`,
+   isto kao vec kod precrtavanja nize.
+
+   NE OSLANJA SE NA TEMU
+
+   Boja se uzima iz varijable teme ako je ima, a ako je nema — iz neutralne sive.
+   Tema koja ne definira nista i dalje daje citljiv prikaz. */
+
+.cjtr-dodatne {
+	display: block;
+	margin-top: .35em;
+	font-size: .8em;
+	line-height: 1.45;
+	font-weight: 400;
+	/* Cijena se cesto nasljeduje kao velika i podebljana — resetiramo. */
+	text-transform: none;
+	letter-spacing: normal;
+
+	/* Boja teksta trgovine: Flatsome, pa blokovske teme, pa neutralna.
+	   Sluzi samo kao osnova iz koje se racuna prigusena vrijednost. */
+	--cjtr-tekst: var(--fs-color-base, var(--wp--preset--color--foreground, #222));
+
+	/* Neutralna siva kao zadana vrijednost, za preglednike bez `color-mix`.
+	   Sredina je namjerna: 5,3:1 na bijeloj i 3,5:1 na gotovo crnoj — ni na jednoj
+	   idealno, ali citljivo na obje, jer ovdje ne znamo na kojoj cemo zavrsiti. */
+	--cjtr-prigusena: #6b6b6b;
+}
+
+/* Gdje preglednik zna mijesati boje, prigusena se RACUNA iz boje teksta.
+
+   Trazeno je 60-70 % kontrasta prema tekstu, sto NIJE isto sto i 65 % neprozirnosti.
+   Izmjereno na ovoj trgovini (tekst #4a4a4a na bijeloj, 8,86:1):
+
+       82 % -> oko 61 % kontrasta        na tamnoj pozadini (#fff na #111) oko 67 %
+
+   Prednost racuna pred utipkanom sivom: odnos prema tekstu ostaje isti i kad
+   trgovac promijeni boju teksta, i kad je pozadina svijetla i kad je tamna. */
+@supports (color: color-mix(in srgb, currentColor 50%, transparent)) {
+	.cjtr-dodatne {
+		--cjtr-prigusena: color-mix(in srgb, var(--cjtr-tekst) 82%, transparent);
+	}
+}
+
+/* Tamne sekcije: teme ih oznacavaju na razlicite nacine, pa pokrivamo poznate.
+   Tema koja ih oznacava nekako trece ostaje na neutralnoj sivoj — zato je i
+   odabrana sredina, a ne svijetla siva. */
+.dark .cjtr-dodatne,
+.has-dark-background .cjtr-dodatne,
+[data-theme="dark"] .cjtr-dodatne {
+	--cjtr-tekst: #fff;
+	--cjtr-prigusena: rgba(255, 255, 255, .82);
+}
+
+/* Boja ide na SVE unutar bloka, ukljucujuci `span.amount` i oznaku valute.
+   Prigusen tekst uz crvenu brojku bio bi gori od sadasnjeg stanja: brojka bi i
+   dalje vukla pogled, a izgubila bi objasnjenje sto je. */
+.cjtr-dodatne,
+.cjtr-dodatne * {
+	color: var(--cjtr-prigusena) !important;
+}
+
+.cjtr-dodatna {
+	display: block;
+	white-space: normal;
+}
+
+/* Oznaka je ranije bila dodatno prozirna, a iznos dodatno taman. Oboje je
+   maknuto: cim su dvije polovice istog retka razlicito istaknute, brojka opet
+   vuce pogled, a tekst koji objasnjava sto ta brojka jest slabi. Redak se cita
+   kao jedna tvrdnja ili se ne cita. */
+
+.cjtr-dodatna-iznos {
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+/* Dodatna cijena NIKAD nije precrtana — nije referenca snizenja.
+   Ovo je zastita od tema koje precrtavaju sve unutar .price. */
+.cjtr-dodatne,
+.cjtr-dodatne * {
+	text-decoration: none !important;
+}
+
+/* Stranica artikla: ondje je cijena krupna (`.product-info .price` je 1.5em i
+   podebljana), pa nasa `.8em` ispadne VECA od obicnog teksta. Velicina se zato
+   ovdje veze uz korijen dokumenta, ne uz cijenu — `em` bi se pomnozio s onim sto
+   tema radi s cijenom i rezultat bi ovisio o temi.
+
+   Vezano uz `.entry-summary` / `.summary`, ne uz `.single-product`: mreza
+   povezanih proizvoda stoji na istoj stranici, dakle pod istom klasom na <body>.
+   Pravilo vezano uz nju smanjilo bi i nju, a ondje je velicina u redu. Obje klase
+   jer je `entry-summary` WooCommerceova, a `summary` starija — Flatsome ima obje. */
+.single-product .entry-summary .cjtr-dodatne,
+.single-product .summary .cjtr-dodatne {
+	font-size: .85rem;
+}
+
+/* Brojka unutar bloka ne smije se sama povecavati. Dodatni CSS trgovine daje
+   `span.amount { font-size: 1.3em }`, sto bi gornjih .85rem vratilo na 1.1rem i
+   opet razdvojilo dva retka po velicini. Vrijedi SAMO na stranici artikla — u
+   mrezi je zatecena velicina u redu i ne dira se. */
+.single-product .entry-summary .cjtr-dodatne .cjtr-dodatna-iznos,
+.single-product .entry-summary .cjtr-dodatne .cjtr-dodatna-iznos *,
+.single-product .summary .cjtr-dodatne .cjtr-dodatna-iznos,
+.single-product .summary .cjtr-dodatne .cjtr-dodatna-iznos * {
+	font-size: 1em !important;
+}
+
+@media (max-width: 480px) {
+	.cjtr-dodatne { font-size: .75em; }
+	.single-product .entry-summary .cjtr-dodatne,
+	.single-product .summary .cjtr-dodatne { font-size: .8rem; }
+}
