@@ -133,7 +133,7 @@ final class Nalazi {
 			'izvori_se_ne_slazu',
 			'dodatna_je_nula',
 			'duge_akcije',
-			'najniza_jos_ne_radi',
+			'najniza_prozor_nije_pun',
 		);
 	}
 
@@ -687,64 +687,71 @@ final class Nalazi {
 	}
 
 	/**
-	 * 16. Najniza cijena u 30 dana se jos ne prikazuje.
+	 * 16. Prozor za najnizu cijenu jos nije pun.
 	 *
-	 * ZASTO OVO MORA POSTOJATI I KAD JE EVIDENCIJA PRAZNA
+	 * STO OVAJ NALAZ JEST OD 1.2.0
 	 *
-	 * Prva verzija je sutjela kad evidencije uopce nema — a to je stanje SVAKE
-	 * nove instalacije. Trgovac ukljuci postavku, uz cijenu se ne pojavi nista, i
-	 * nista mu ne kaze zasto. Tocno ona vrsta tihog izostajanja koju ovaj dodatak
-	 * inace lovi kod drugih.
+	 * Ranije je javljao cekanje: prikaz se pali tek kad evidencija pokrije punih
+	 * trideset dana. Taj je uvjet maknut — najniza u 30 dana nije tvrdnja da je
+	 * cijena stara trideset dana nego najmanja koja je u prozoru primijenjena.
+	 *
+	 * Sada nalaz nosi OGRADU, ne cekanje: brojka se prikazuje, ali racuna se iz
+	 * onoga sto imamo. Bio li artikl prije nase prve biljeske jeftiniji, u njoj
+	 * nije. To trgovac mora znati, jer je tvrdnja njegova.
+	 *
+	 * ZASTO POSTOJI I KAD JE EVIDENCIJA PRAZNA
+	 *
+	 * Prazna evidencija je stanje svake nove instalacije, i tada se uz cijenu ne
+	 * pojavi nista. Bez ovog nalaza to je tiho izostajanje — tocno ona vrsta koju
+	 * ovaj dodatak inace lovi kod drugih.
 	 */
-	private static function najniza_jos_ne_radi(): ?Nalaz {
+	private static function najniza_prozor_nije_pun(): ?Nalaz {
 		if ( ! Postavke::najniza_30() || Dubina::dovoljna() ) {
 			return null;
 		}
 
-		$seze = Dubina::seze_do();
-
-		$nalaz = ( new Nalaz( 'najniza_jos_ne_radi' ) )
+		$nalaz = ( new Nalaz( 'najniza_prozor_nije_pun' ) )
 			->vaznost( Nalaz::SAVJET )
-			->postupak( __( 'Imate li stariju povijest cijena iz drugog dodatka, mozemo je preuzeti i prikaz moze poceti odmah. Ako je nemate, ceka se.', Config::TEXT_DOMAIN ) )
+			->postupak( __( 'Imate li stariju povijest cijena iz drugog dodatka, mozemo je preuzeti i prozor se popunjava odmah. Ako je nemate, popunjava se sam, iz dana u dan.', Config::TEXT_DOMAIN ) )
 			->ekran( Admin::url( Admin::STRANICA_NAPREDNO ), __( 'Preuzmi stariju povijest', Config::TEXT_DOMAIN ) );
 
-		if ( 0 === $seze ) {
-			// Nova instalacija: evidencija pocinje danas, pa se ne zna ni kad ce
-			// prikaz poceti. Obecati datum bilo bi pogadanje.
+		if ( ! Dubina::ima_zapisa() ) {
+			// Nijedan zapis: nema se sto prikazati ni za jedan artikl. Prva
+			// rekonsilijacija (dnevno, 05:00) zabiljezi zatecene cijene.
 			return $nalaz
 				->naslov(
 					sprintf(
 						/* translators: %d = broj dana */
-						__( 'Najniza cijena u %d dana ukljucena je, ali se jos ne prikazuje', Config::TEXT_DOMAIN ),
+						__( 'Najniza cijena u %d dana ukljucena je, ali evidencija je jos prazna', Config::TEXT_DOMAIN ),
 						Dubina::DANA
 					)
 				)
-				->objasnjenje(
-					sprintf(
-						/* translators: %d = broj dana */
-						__( 'Evidencija o cijenama je prazna — pocinje se voditi od instalacije dodatka. Dok ne bude pokrivala %1$d dana, ta se tvrdnja ne smije iznijeti: brojka izracunata iz kraceg razdoblja nije najniza cijena u %1$d dana. Do tada se uz cijenu ne prikazuje nista.', Config::TEXT_DOMAIN ),
-						Dubina::DANA
-					)
-				);
+				->objasnjenje( __( 'Evidencija o cijenama pocinje se voditi od instalacije dodatka i jos nema nijedan zapis, pa se uz cijenu nema sto prikazati. Prve zatecene cijene biljeze se pri sljedecoj dnevnoj provjeri, a nakon toga svaka promjena cim se dogodi.', Config::TEXT_DOMAIN ) );
 		}
+
+		$seze = Dubina::seze_do();
 
 		return $nalaz
 			->naslov(
 				sprintf(
-					/* translators: 1: broj dana, 2: broj dana */
-					__( 'Najniza cijena u %1$d dana pocinje se prikazivati za %2$d dana', Config::TEXT_DOMAIN ),
-					Dubina::DANA,
-					Dubina::dana_do_pocetka()
+					/* translators: %d = broj dana */
+					__( 'Najniza cijena se prikazuje, ali prozor od %d dana jos nije pun', Config::TEXT_DOMAIN ),
+					Dubina::DANA
 				)
 			)
 			->objasnjenje(
-				sprintf(
-					/* translators: 1: datum dokle sezemo, 2: datum dokle treba, 3: broj dana */
-					__( 'Nasa evidencija o cijenama seze do %1$s, a za tvrdnju o %3$d dana treba sezati do %2$s. Do tada se ne prikazuje nista — brojka izracunata iz kraceg razdoblja ne bi bila najniza cijena u %3$d dana.', Config::TEXT_DOMAIN ),
-					wp_date( 'j.n.Y.', $seze ),
-					wp_date( 'j.n.Y.', Dubina::treba_do() ),
-					Dubina::DANA
-				)
+				( $seze > 0 )
+					? sprintf(
+						/* translators: 1: datum dokle sezemo, 2: broj dana */
+						__( 'Nasa evidencija seze do %1$s i zato prozor od %2$d dana jos nije pun. Brojka uz cijenu je najmanja koju imamo zabiljezenu — sto je ujedno i najmanja u prozoru, jer druge u njemu nije bilo. Ali ako je artikl prije %1$s bio jeftiniji, toga u njoj nema. Ograda nestaje kad evidencija pokrije svih %2$d dana.', Config::TEXT_DOMAIN ),
+						wp_date( 'j.n.Y.', $seze ),
+						Dubina::DANA
+					)
+					: sprintf(
+						/* translators: %d = broj dana */
+						__( 'Zabiljezene cijene znamo, ali ne i otkad tocno vrijede — takav zapis daje vrijednost, a ne dokazuje koliko daleko unatrag znamo. Brojka uz cijenu je najmanja koju imamo. Ako je artikl ranije bio jeftiniji, to u njoj nije. Ograda nestaje kad evidencija sama pokrije %d dana.', Config::TEXT_DOMAIN ),
+						Dubina::DANA
+					)
 			);
 	}
 

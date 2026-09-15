@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.1.2
+Stable tag: 1.2.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -117,12 +117,17 @@ stvari ne zna kojoj vjerovati, a to je gore nego nijedna.
 
 = Ukljucio sam najnizu cijenu u 30 dana, a ne prikazuje se =
 
-Na novoj instalaciji je to ocekivano. Evidencija o cijenama vodi se od
-instalacije dodatka, pa jos ne pokriva 30 dana — a brojka izracunata iz kraceg
-razdoblja nije najniza cijena u 30 dana. Ekran Stanje javlja od kojeg datuma
-prikaz moze poceti.
+Prikazuje se najmanja cijena koju imamo zabiljezenu, i ne ceka se punih trideset
+dana — ako je jedina zabiljezena ona od jucer, onda je ona i najmanja u prozoru.
+Prikaz izostaje samo dok u evidenciji nema nijednog zapisa, jer se tada nema sto
+prikazati. Prve zatecene cijene biljeze se pri prvoj dnevnoj provjeri.
 
-Imate li stariju povijest iz drugog dodatka, uvoz je skracuje na nulu.
+Provjerite i je li artikl uopce na snizenju: bez snizenja se ta brojka ne
+prikazuje, jer bi bila jednaka danasnjoj cijeni.
+
+Dok evidencija ne pokrije punih 30 dana, ekran Stanje nosi ogradu: ako je artikl
+prije nase prve biljeske bio jeftiniji, toga u brojci nema. Imate li stariju
+povijest iz drugog dodatka, uvoz odmah popunjava prozor.
 
 = Sidrena cijena mi se ne prikazuje =
 
@@ -134,6 +139,18 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.2.0 =
+* Najniza cijena u 30 dana vise ne ceka da evidencija pokrije punih trideset
+  dana. Prikazuje se najmanja zabiljezena cijena u prozoru — ako je jedina
+  zabiljezena ona od jucer, onda je ona i najmanja, jer druge nije bilo.
+  Raniji uvjet je pogresno citao propis: "najniza u 30 dana" nije tvrdnja da je
+  cijena stara trideset dana. Uz to je stvarao gore stanje od onoga koje je htio
+  sprijeciti — nova trgovina ostajala bi trideset dana bez obveznog podatka.
+* Dok prozor nije pun, ekran Stanje nosi ogradu: ako je artikl prije prve
+  biljeske bio jeftiniji, toga u brojci nema. Ograda ide trgovcu, a ne kao
+  sutnja prema kupcu, i sama nestaje kad prozor bude pun.
+* Prikaz izostaje jos samo dok u evidenciji nema nijednog zapisa.
 
 = 1.1.2 =
 * Ekran Artikli vise nema tablicu za rucni unos u nizu. Podaci ulaze na dva

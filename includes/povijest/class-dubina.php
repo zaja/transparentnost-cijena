@@ -2,24 +2,35 @@
 /**
  * Koliko daleko unatrag seze evidencija o cijenama.
  *
- * ZASTO SE TO UOPCE MJERI
+ * STO OVO JEST, A STO NIJE
  *
- * Dodatak instaliran prije deset dana ne smije tvrditi da zna najnizu cijenu u
- * trideset. To nije priblizno tocna tvrdnja nego netocna — i bas ona koju propis
- * trazi da bude tocna.
+ * Ovo je MJERA, ne brava. Sluzi da ekran moze reci koliko se daleko zna, i da
+ * trgovac zna hoce li brojka biti puna ili racunata iz kraceg razdoblja.
  *
- * Ista disciplina kao kod dodatne cijene: ne tvrdi ono sto ne znas.
+ * Ranije je bila brava: dok evidencija ne bi pokrila punih trideset dana, uz
+ * cijenu se nije prikazivalo nista. To je bila POGRESNA odluka i ispravljena je
+ * u 1.2.0 — obrazlozenje nize.
  *
- * MJERI SE PO ARTIKLU, JER JE I PROPIS PO ARTIKLU
+ * ZASTO BRAVA NIJE BILA ISPRAVNA
  *
- * Za proizvod koji se prodaje krace od trideset dana istice se najniza cijena od
- * kad je u prodaji. Zato uvjet nije "imamo trideset dana podataka" nego "nasa
- * evidencija seze barem do trenutka od kojeg se za TAJ artikl racuna".
+ * "Najniza cijena u 30 dana" nije tvrdnja da je cijena stara trideset dana. To
+ * je najmanja cijena koja je u tom prozoru primijenjena. Ako je jedina koju smo
+ * zabiljezili ona od jucer, onda je ona i najmanja u prozoru — druge nije bilo.
  *
- * ZASTO SE ZAPISI S `ts = 0` NE RACUNAJU
+ * Brava je uz to bila i stetna u prakticnom smislu: trgovina koja dodatak
+ * instalira danas ostajala bi trideset dana BEZ obveznog podatka, i to tiho.
  *
- * Uvezena povijest iz tudeg dodatka zna imati zapis bez pouzdanog pocetka —
- * vrijednost znamo, ali ne i otkad vrijedi. Takav zapis ne dokazuje dubinu: ne
+ * STO OSTAJE KAO OGRADA
+ *
+ * Ako je artikl prije nase prve biljeske bio jeftiniji, to u brojci nije. Zato
+ * dok evidencija ne pokrije puni prozor, ekran Stanje to izrijekom pise. Ograda
+ * je na ekranu trgovca, ne u sutnji prema kupcu.
+ *
+ * ZASTO SE ZAPISI S `ts = 0` NE RACUNAJU U DUBINU
+ *
+ * Dnevna rekonsilijacija i uvezena povijest iz tudeg dodatka znaju imati zapis
+ * bez pouzdanog pocetka — vrijednost znamo, ali ne i otkad vrijedi. Takav zapis
+ * ULAZI u racun najnize (vrijednost je vrijednost), ali ne dokazuje dubinu: ne
  * moze reci je li cijena prije njega bila niza.
  *
  * @package CJTR
@@ -37,9 +48,9 @@ final class Dubina {
 	const DANA = 30;
 
 	/**
-	 * Najstariji trenutak do kojeg evidencija seze, kao Unix vrijeme.
+	 * Najstariji trenutak do kojeg evidencija POUZDANO seze, kao Unix vrijeme.
 	 *
-	 * @return int 0 ako evidencije nema
+	 * @return int 0 ako nema nijednog zapisa s poznatim pocetkom
 	 */
 	public static function seze_do(): int {
 		global $wpdb;
@@ -51,70 +62,30 @@ final class Dubina {
 		return ( null === $min ) ? 0 : (int) $min;
 	}
 
-	/** Trenutak do kojeg bi morala sezati da se smije tvrditi najniza u 30 dana. */
+	/**
+	 * Ima li evidencija ijedan zapis.
+	 *
+	 * Razlicito od `seze_do() > 0`: nova instalacija nakon prve rekonsilijacije
+	 * ima zapis o svakom artiklu, ali s `ts = 0` — vrijednost se zna, pocetak ne.
+	 * Za prikaz je to dovoljno, za dubinu nije.
+	 */
+	public static function ima_zapisa(): bool {
+		global $wpdb;
+
+		$t = Config::table( Config::TABLE_POVIJEST );
+
+		return null !== $wpdb->get_var( "SELECT 1 FROM `{$t}` LIMIT 1" ); // phpcs:ignore
+	}
+
+	/** Trenutak do kojeg bi morala sezati da prozor bude pun. */
 	public static function treba_do(): int {
 		return time() - self::DANA * DAY_IN_SECONDS;
 	}
 
-	/** Je li evidencija dovoljno duboka za bilo koji artikl. */
+	/** Pokriva li evidencija puni prozor od 30 dana. */
 	public static function dovoljna(): bool {
 		$seze = self::seze_do();
 
 		return $seze > 0 && $seze <= self::treba_do();
-	}
-
-	/**
-	 * Kad prikaz moze poceti, ako danas jos ne moze.
-	 *
-	 * @return int Unix vrijeme, ili 0 ako vec moze ili evidencije uopce nema
-	 */
-	public static function pocinje(): int {
-		$seze = self::seze_do();
-
-		if ( 0 === $seze || self::dovoljna() ) {
-			return 0;
-		}
-
-		return $seze + self::DANA * DAY_IN_SECONDS;
-	}
-
-	/** Koliko dana jos treba cekati. */
-	public static function dana_do_pocetka(): int {
-		$p = self::pocinje();
-
-		if ( 0 === $p ) {
-			return 0;
-		}
-
-		return (int) max( 0, ceil( ( $p - time() ) / DAY_IN_SECONDS ) );
-	}
-
-	/**
-	 * Smije li se za ovaj artikl tvrditi najniza cijena u 30 dana.
-	 *
-	 * Artikl uveden prije pet dana ima prozor od pet dana, i nasa ga evidencija
-	 * pokriva cim smo ga vidjeli od pocetka.
-	 */
-	public static function pokriven( int $entity_id ): bool {
-		global $wpdb;
-
-		$granica = self::treba_do();
-
-		$nastao = get_post_time( 'U', true, $entity_id );
-		if ( $nastao && $nastao > $granica ) {
-			$granica = (int) $nastao;
-		}
-
-		$t = Config::table( Config::TABLE_POVIJEST );
-
-		$ima = $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT 1 FROM `{$t}` WHERE entity_id = %d AND ts > 0 AND ts <= %d LIMIT 1",
-				$entity_id,
-				$granica
-			) // phpcs:ignore
-		);
-
-		return null !== $ima;
 	}
 }

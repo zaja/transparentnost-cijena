@@ -254,11 +254,13 @@ Učitava se **samo na stranicama na kojima uobičajeni put nije radio.** Ako sve
 
 Imate li već drugi dodatak koji to prikazuje, **naš prikaz je zadano isključen** — i piše koji je to dodatak. Kupac koji vidi dvije tvrdnje o istoj stvari ne zna kojoj vjerovati, a to je gore nego nijedna.
 
-Uključite li je, prikazuje se tek kad naša evidencija bude dovoljno duboka. **Dodatak instaliran prije deset dana ne smije tvrditi da zna najnižu u trideset** — to nije približno točno nego netočno.
+Uključite li je, prikazuje se **najmanja cijena koju imamo zabilježenu** u posljednjih 30 dana. Ako je jedina zabilježena ona od jučer, onda je ona i najmanja u prozoru — druge u njemu nije bilo.
 
-> **Na novoj instalaciji to znači: uključili ste opciju, a uz cijenu se ne pojavljuje ništa.** Tako i treba biti — evidencija se vodi od instalacije i još ne pokriva 30 dana. Na ekranu **Stanje** stoji nalaz koji to kaže, s datumom od kojeg prikaz može početi.
+> **Prikaz se ne čeka.** Dok evidencija ne pokrije punih 30 dana, na ekranu **Stanje** stoji nalaz s jednom ogradom: bio li artikl jeftiniji prije naše prve bilješke, toga u brojci nema. Ograda sama nestane kad prozor bude pun.
 
-Imate li stariju povijest iz drugog dodatka, uvoz je skraćuje na nulu.
+Na posve novoj instalaciji, dok u evidenciji nema nijednog zapisa, uz cijenu se ne pojavljuje ništa — nema se što prikazati. Prve zatečene cijene bilježe se pri prvoj dnevnoj provjeri, a nakon toga svaka promjena čim se dogodi.
+
+Imate li stariju povijest iz drugog dodatka, uvoz odmah popunjava prozor.
 
 ---
 

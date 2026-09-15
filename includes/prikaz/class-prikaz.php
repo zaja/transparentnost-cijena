@@ -109,22 +109,34 @@ final class Prikaz {
 		 * Najniza u 30 dana ima smisla samo kad se oglasava snizenje. Bez akcije bi
 		 * bila jednaka danasnjoj cijeni i samo bi zatrpala prikaz.
 		 *
-		 * Uz to dva uvjeta koji se ticu ISTINITOSTI, ne korisnosti:
+		 * Drugi uvjet tice se ISTINITOSTI, ne korisnosti: ako drugi dodatak vec
+		 * prikazuje istu tvrdnju, sutimo. Dvije tvrdnje o istoj stvari gore su od
+		 * nijedne, jer kupac ne zna kojoj vjerovati. To je postavka.
 		 *
-		 *   - postavka: ako drugi dodatak vec prikazuje istu tvrdnju, sutimo. Dvije
-		 *     tvrdnje o istoj stvari gore su od nijedne, jer kupac ne zna kojoj vjerovati.
+		 * TRECEG UVJETA VISE NEMA
 		 *
-		 *   - dubina: dodatak instaliran prije deset dana ne smije tvrditi da zna
-		 *     najnizu u trideset. To nije priblizno tocno nego netocno, i to bas ono
-		 *     sto propis trazi da bude tocno. Mjeri se po artiklu, jer je i propis
-		 *     po artiklu — proizvod u prodaji krace od 30 dana ima kraci prozor.
+		 * Do 1.2.0 se ovdje trazilo i da nasa evidencija seze punih trideset dana
+		 * unatrag. Bilo je pogresno. "Najniza cijena u 30 dana" nije tvrdnja da je
+		 * cijena stara trideset dana nego najmanja koja je u tom prozoru
+		 * primijenjena — a ako je jedina zabiljezena ona od jucer, onda je ona i
+		 * najmanja: druge u prozoru nije bilo.
+		 *
+		 * Uz to je taj uvjet stvarao gore stanje od onoga koji je htio sprijeciti:
+		 * trgovina koja dodatak instalira danas ostajala bi trideset dana bez
+		 * obveznog podatka, i to tiho.
+		 *
+		 * Ograda — da artikl prije nase prve biljeske nije bio jeftiniji — stoji na
+		 * ekranu Stanje, dok evidencija ne pokrije puni prozor: prema kupcu se ne
+		 * suti, prema trgovcu se ne presucuje.
+		 *
+		 * `Zapis::najniza()` vraca null kad za artikl nema nijednog zapisa u
+		 * prozoru — tada se i dalje ne prikazuje nista, jer nema sto.
 		 *
 		 * Dodatna cijena se ovime NE dira ni u jednom slucaju.
 		 */
 		$najniza = null;
 		if ( Postavke::najniza_30()
-			&& method_exists( $proizvod, 'is_on_sale' ) && $proizvod->is_on_sale()
-			&& Dubina::pokriven( $id ) ) {
+			&& method_exists( $proizvod, 'is_on_sale' ) && $proizvod->is_on_sale() ) {
 			$najniza = Zapis::najniza( $id, Dubina::DANA );
 		}
 

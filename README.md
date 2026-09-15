@@ -11,7 +11,7 @@ WooCommerce dodatak za usklađenje s hrvatskim propisima o objavi cjenika i isti
 - **Ističe sidrenu cijenu** uz cijenu proizvoda — koliko je artikl stajao na referentni datum.
 - **Objavljuje cjenik** na javnoj adresi, svaki dan, u XML-u i CSV-u. Arhiva 30 dana, stabilna poveznica, REST.
 - **Prima podatke iz ERP-a**: odabir datoteke → povezivanje stupaca → probni prolaz → upis.
-- **Opcionalno prikazuje najnižu cijenu u 30 dana**, ali samo kad je vlastita evidencija dovoljno duboka da se to smije tvrditi.
+- **Opcionalno prikazuje najnižu cijenu u 30 dana** — najmanju koju ima zabilježenu u tom prozoru.
 
 Cijena koja izlazi u cjenik je ona **koju kupac stvarno plati** — s porezom, i sa sniženjem ako ga ima. Trgovina koja cijene unosi bez poreza dobiva bruto iznos, jer je to iznos s blagajne.
 
@@ -29,7 +29,7 @@ Ne donosi ni poslovne odluke: gdje nađe problem, prijavi ga i objasni — ali n
 
 **Prazno nije isto što i izostavljeno.** Polje bez vrijednosti znači „ne znamo"; izostavljen element znači „za ovaj artikl se ne primjenjuje". To su različite tvrdnje i datoteka ih razlikuje.
 
-**Ne tvrdi ono što ne znaš.** Najniža cijena u 30 dana ne prikazuje se dok evidencija ne seže dovoljno daleko. Barkod koji strukturno ne može biti barkod ne objavljuje se. Vrijednost koju je trgovac izjavio bilježi se kao izjava, ne kao mjerenje.
+**Ne tvrdi ono što ne znaš.** Barkod koji strukturno ne može biti barkod ne objavljuje se. Vrijednost koju je trgovac izjavio bilježi se kao izjava, ne kao mjerenje. Najniža cijena u 30 dana računa se iz zabilježenog, a dok evidencija ne pokrije puni prozor, ekran Stanje to i piše — ograda ide trgovcu, ne šutnja kupcu.
 
 **Pred neočekivanim se staje.** Padne li samoprovjera, jučerašnja datoteka ostaje na snazi i javi se greška. Stari cjenik je bolji od pokvarenog.
 
@@ -77,6 +77,8 @@ Za dnevnu objavu treba jedan cron redak u cPanelu — dodatak ga ispiše gotovog
 Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
+
+**1.2.0** — najniža cijena u 30 dana više ne čeka punih trideset dana evidencije; prikazuje se najmanja zabilježena u prozoru, uz ogradu na ekranu Stanje dok prozor nije pun.
 
 **1.1.2** — ekran Artikli nema više tablicu za ručni unos u nizu; podaci ulaze uvozom, prikupljanjem ili na samom proizvodu.
 

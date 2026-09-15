@@ -115,22 +115,34 @@ $ima_regulirane = (bool) Postavke::daj( Postavke::IMA_REGULIRANE );
 				<?php if ( Dubina::dovoljna() ) : ?>
 					<?php
 					printf(
-						/* translators: %s = datum */
-						esc_html__( 'Nasa evidencija seze do %s, sto je dovoljno duboko.', Config::TEXT_DOMAIN ),
-						esc_html( wp_date( 'j.n.Y.', Dubina::seze_do() ) )
+						/* translators: 1: datum, 2: broj dana */
+						esc_html__( 'Nasa evidencija seze do %1$s, dakle pokriva puni prozor od %2$d dana.', Config::TEXT_DOMAIN ),
+						esc_html( wp_date( 'j.n.Y.', Dubina::seze_do() ) ),
+						(int) Dubina::DANA
 					);
 					?>
-				<?php elseif ( Dubina::seze_do() > 0 ) : ?>
+				<?php elseif ( Dubina::ima_zapisa() ) : ?>
 					<?php
-					printf(
-						/* translators: 1: datum, 2: broj dana */
-						esc_html__( 'Nasa evidencija seze do %1$s, pa se jos ne prikazuje — prikaz pocinje za %2$d dana. Brojka izracunata iz kraceg razdoblja ne bi bila najniza cijena u 30 dana.', Config::TEXT_DOMAIN ),
-						esc_html( wp_date( 'j.n.Y.', Dubina::seze_do() ) ),
-						(int) Dubina::dana_do_pocetka()
-					);
+					/*
+					 * Ne pise se "ne prikazuje se" nego DOKLE se zna.
+					 *
+					 * Prikaz se ne ceka: najniza u 30 dana je najmanja cijena koja je u
+					 * prozoru primijenjena, a ako je jedina zabiljezena ona od jucer,
+					 * onda je ona i najmanja. Ograda je u drugoj recenici i vrijedi
+					 * samo dok prozor nije pun.
+					 */
+					if ( Dubina::seze_do() > 0 ) {
+						printf(
+							/* translators: %s = datum */
+							esc_html__( 'Nasa evidencija seze do %s i prozor jos nije pun. Prikazuje se najmanja cijena koju imamo zabiljezenu — ako je artikl prije toga bio jeftiniji, toga u njoj nema.', Config::TEXT_DOMAIN ),
+							esc_html( wp_date( 'j.n.Y.', Dubina::seze_do() ) )
+						);
+					} else {
+						esc_html_e( 'Prikazuje se najmanja cijena koju imamo zabiljezenu. Otkad tocno vrijedi jos se ne zna, pa se ne moze reci koliko daleko unatrag sezemo.', Config::TEXT_DOMAIN );
+					}
 					?>
 				<?php else : ?>
-					<?php esc_html_e( 'Evidencija o cijenama jos je prazna, pa se nista ne prikazuje.', Config::TEXT_DOMAIN ); ?>
+					<?php esc_html_e( 'Evidencija o cijenama jos je prazna, pa se nema sto prikazati. Prve zatecene cijene biljeze se pri sljedecoj dnevnoj provjeri.', Config::TEXT_DOMAIN ); ?>
 				<?php endif; ?>
 			</p>
 		</div>
