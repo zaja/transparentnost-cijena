@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.2.1** — najniža cijena u 30 dana izlazi i na varijabilnom proizvodu, uz isto pravilo kao sidrena: samo ako su sve varijante snižene i brojka im je ista.
+
 **1.2.0** — najniža cijena u 30 dana više ne čeka punih trideset dana evidencije; prikazuje se najmanja zabilježena u prozoru, uz ogradu na ekranu Stanje dok prozor nije pun.
 
 **1.1.2** — ekran Artikli nema više tablicu za ručni unos u nizu; podaci ulaze uvozom, prikupljanjem ili na samom proizvodu.

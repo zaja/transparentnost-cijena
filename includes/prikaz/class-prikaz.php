@@ -154,11 +154,31 @@ final class Prikaz {
 	/**
 	 * Varijabilni roditelj, bez odabrane varijante.
 	 *
-	 * ODLUKA: prikazuje se samo ako SVE varijante imaju istu dodatnu cijenu.
+	 * ODLUKA: brojka se prikazuje samo ako je IMA SVAKA varijanta i ako je svima
+	 * ISTA.
 	 *
 	 * Raspon se ne prikazuje jer "dodatna cijena od 5 do 12 eura" nije tvrdnja ni
 	 * o jednom artiklu — kupac kupuje jednu varijantu, ne raspon. Kad se varijante
 	 * razlikuju, prikaz se pojavljuje tek pri odabiru, isto kao i sama cijena.
+	 *
+	 * ZASTO NAJNIZA U 30 DANA DO 1.2.1 OVDJE NIJE IZLAZILA
+	 *
+	 * Stajalo je tvrdo `'najniza_30' => null`, uz sidrenu koja se racunala. Na
+	 * varijabilnom proizvodu se zato uz cijenu vidjela sidrena, a najniza nikad.
+	 *
+	 * Samo po sebi to se cinilo bezopasnim — "pojavit ce se kad kupac odabere
+	 * varijantu". Ne pojavi se: kad sve varijante imaju istu cijenu,
+	 * `WC_Product_Variable::get_available_variation()` vraca PRAZAN `price_html`
+	 * (jer je min === max), pa se blok s cijenom varijante uopce ne iscrta i nas
+	 * filter nad njom nikad ne prode. Ostane samo roditelj — a on je sutio.
+	 *
+	 * Dvije tocke koje svaka za sebe izgledaju u redu, a zajedno daju tiho
+	 * izostajanje obveznog podatka na cijeloj jednoj vrsti proizvoda.
+	 *
+	 * OSTAJE OTVORENO: varijante iste cijene ali razlicite povijesti. Tada sloge
+	 * nema, roditelj suti, a blok varijante je prazan — pa se ne prikazuje nista.
+	 * Rjesenje trazi dopunu `woocommerce_available_variation`, sto mijenja izgled
+	 * i onima kojima danas radi; nije dio ovog popravka.
 	 */
 	private static function za_varijabilni( $proizvod ): ?array {
 		$djeca = method_exists( $proizvod, 'get_children' ) ? (array) $proizvod->get_children() : array();
@@ -166,27 +186,80 @@ final class Prikaz {
 			return null;
 		}
 
-		$sidrene = Sidrena::za_vise( array_map( 'intval', $djeca ) );
+		$djeca = array_map( 'intval', $djeca );
 
-		// Nedostaje li ijednoj varijanti, roditelj suti — tvrdnja bi vrijedila
-		// samo za dio varijanti, a kupac ne vidi za koje.
-		if ( count( $sidrene ) !== count( $djeca ) ) {
-			return null;
+		$sidrena = self::sloga( Sidrena::za_vise( $djeca ), count( $djeca ) );
+
+		/*
+		 * Uvjet snizenja je i ovdje isti kao kod pojedinacnog artikla, samo strozi:
+		 * mora vrijediti za SVE varijante. Roditelj kod kojeg je snizena samo jedna
+		 * varijanta nije snizen kao artikl, pa uz njegovu cijenu ta brojka ne stoji.
+		 */
+		$najniza = null;
+		if ( Postavke::najniza_30() && self::sve_na_akciji( $djeca ) ) {
+			$najniza = self::sloga( Zapis::najnize_za( $djeca, Dubina::DANA ), count( $djeca ) );
 		}
 
-		$razlicite = array_unique( array_map( function ( $v ) {
-			return round( (float) $v, 4 );
-		}, $sidrene ) );
-
-		if ( count( $razlicite ) !== 1 ) {
+		if ( null === $sidrena && null === $najniza ) {
 			return null;
 		}
 
 		return array(
-			'sidrena'    => (float) reset( $razlicite ),
-			'najniza_30' => null,
+			'sidrena'    => $sidrena,
+			'najniza_30' => $najniza,
 			'ref_datum'  => Postavke::ref_datum(),
 		);
+	}
+
+	/**
+	 * Jedna vrijednost za sve varijante, ili nista.
+	 *
+	 * Nedostaje li ijednoj, roditelj suti — tvrdnja bi vrijedila samo za dio
+	 * varijanti, a kupac ne vidi za koje.
+	 *
+	 * @param array<int,float> $vrijednosti
+	 */
+	private static function sloga( array $vrijednosti, int $koliko_ih_treba ): ?float {
+		if ( count( $vrijednosti ) !== $koliko_ih_treba ) {
+			return null;
+		}
+
+		$razlicite = array_unique(
+			array_map(
+				function ( $v ) {
+					return round( (float) $v, 4 );
+				},
+				$vrijednosti
+			)
+		);
+
+		return ( 1 === count( $razlicite ) ) ? (float) reset( $razlicite ) : null;
+	}
+
+	/**
+	 * Jesu li SVE varijante na snizenju.
+	 *
+	 * Cita se iz `wc_product_meta_lookup`, jednim upitom — isto kao sve ostalo o
+	 * cijenama. `$roditelj->is_on_sale()` ovdje ne valja: on je istinit vec kad je
+	 * snizena JEDNA varijanta.
+	 *
+	 * @param int[] $ids
+	 */
+	private static function sve_na_akciji( array $ids ): bool {
+		global $wpdb;
+
+		if ( empty( $ids ) ) {
+			return false;
+		}
+
+		$u = implode( ',', array_map( 'intval', $ids ) );
+
+		$snizenih = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->prefix}wc_product_meta_lookup
+			 WHERE product_id IN ({$u}) AND onsale = 1" // phpcs:ignore
+		);
+
+		return $snizenih === count( $ids );
 	}
 
 	/**

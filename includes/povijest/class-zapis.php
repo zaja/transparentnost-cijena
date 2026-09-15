@@ -159,6 +159,50 @@ final class Zapis {
 	}
 
 	/**
+	 * Najnize cijene za vise entiteta odjednom.
+	 *
+	 * Postoji zbog varijabilnog roditelja: njegovih dvadeset varijanti ne smije
+	 * znaciti dvadeset upita na svakoj stranici mreze. Isti prozor i isti uvjeti
+	 * kao u `najniza()`, samo grupirano.
+	 *
+	 * @param int[] $ids
+	 * @return array<int,float> samo oni koji u prozoru imaju zapis
+	 */
+	public static function najnize_za( array $ids, int $dana = 30, ?int $do = null ): array {
+		global $wpdb;
+
+		if ( empty( $ids ) ) {
+			return array();
+		}
+
+		$do = $do ?? time();
+		$od = $do - ( $dana * DAY_IN_SECONDS );
+		$u  = implode( ',', array_map( 'intval', $ids ) );
+
+		$redci = $wpdb->get_results(
+			$wpdb->prepare(
+				'SELECT entity_id, MIN(price) AS najniza
+				 FROM `' . self::tablica() . "`
+				 WHERE entity_id IN ({$u})
+				   AND price IS NOT NULL
+				   AND ts <= %d
+				   AND ( ts_end = 0 OR ts_end >= %d )
+				 GROUP BY entity_id",
+				$do,
+				$od
+			) // phpcs:ignore
+		);
+
+		$out = array();
+		foreach ( (array) $redci as $r ) {
+			if ( null !== $r->najniza ) {
+				$out[ (int) $r->entity_id ] = (float) $r->najniza;
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Interval koji pokriva zadani trenutak.
 	 *
 	 * @return object|null

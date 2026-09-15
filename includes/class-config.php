@@ -20,7 +20,7 @@ final class Config {
 	/** Prefiks za tablice, opcije, meta polja, hookove i CSS klase. */
 	const PREFIX = 'cjtr';
 
-	const VERSION     = '1.2.0';
+	const VERSION     = '1.2.1';
 	const TEXT_DOMAIN = 'cjenovna-transparentnost';
 
 	/** Verzija sheme. Podici pri svakoj promjeni tablica. */

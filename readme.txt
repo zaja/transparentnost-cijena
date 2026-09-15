@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.2.0
+Stable tag: 1.2.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -139,6 +139,15 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.2.1 =
+* Najniza cijena u 30 dana sada izlazi i na varijabilnom proizvodu. Ranije na
+  njemu nije izlazila nikad: roditelj je tu brojku imao tvrdo iskljucenu, a blok
+  s cijenom varijante WooCommerce uopce ne iscrta kad sve varijante imaju istu
+  cijenu — pa je nije imao tko ispisati.
+* Vrijedi isto pravilo kao za sidrenu: prikazuje se samo ako su SVE varijante
+  snizene i ako je brojka svima ista. Inace roditelj suti, jer bi tvrdnja
+  vrijedila samo za dio varijanti, a kupac ne vidi za koje.
 
 = 1.2.0 =
 * Najniza cijena u 30 dana vise ne ceka da evidencija pokrije punih trideset
