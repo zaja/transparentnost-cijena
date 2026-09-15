@@ -204,6 +204,37 @@ $ima_regulirane = (bool) Postavke::daj( Postavke::IMA_REGULIRANE );
 			</p>
 		</div>
 
+		<?php /* ------------------------ rezerve ------------------------ */ ?>
+		<div class="<?php echo esc_attr( Config::css( 'kartica' ) ); ?>">
+			<h2><?php esc_html_e( 'Rezerve', Config::TEXT_DOMAIN ); ?></h2>
+
+			<p class="<?php echo esc_attr( Config::css( 'uvod' ) ); ?>">
+				<?php esc_html_e( 'Dvije stvari koje rade u pozadini kad uobicajeni put zakaze. Ostavite ih ukljucene osim ako imate razlog.', Config::TEXT_DOMAIN ); ?>
+			</p>
+
+			<p>
+				<label>
+					<input type="checkbox" name="<?php echo esc_attr( Postavke::PROMET_GURA ); ?>" value="1"
+						<?php checked( Postavke::promet_gura() ); ?>>
+					<?php esc_html_e( 'Ako dnevno pokretanje zakaze, neka obradu gurnu posjeti trgovini', Config::TEXT_DOMAIN ); ?>
+				</label>
+				<span class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
+					<?php esc_html_e( 'Radi nakon sto je stranica vec poslana, pa kupac ne ceka. NIJE zamjena za dnevno pokretanje: dan bez ijednog posjeta ostaje bez cjenika, a posjet koji posluzi predmemoriju do nas uopce ne dode.', Config::TEXT_DOMAIN ); ?>
+				</span>
+			</p>
+
+			<p>
+				<label>
+					<input type="checkbox" name="<?php echo esc_attr( Postavke::JS_REZERVA ); ?>" value="1"
+						<?php checked( Postavke::js_rezerva() ); ?>>
+					<?php esc_html_e( 'Dopisi sidrenu cijenu i ondje gdje je tema nije ispisala', Config::TEXT_DOMAIN ); ?>
+				</label>
+				<span class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
+					<?php esc_html_e( 'Neke teme i graditelji stranica cijenu crtaju na svoj nacin, pa je ne mozemo dopuniti uobicajenim putem. Tada se dopisuje u pregledniku. Ucitava se samo na stranicama na kojima uobicajeni put nije radio — ako sve radi, ovo se nikad ne pokrene.', Config::TEXT_DOMAIN ); ?>
+				</span>
+			</p>
+		</div>
+
 		<p>
 			<button class="button button-primary" name="radnja" value="spremi">
 				<?php esc_html_e( 'Spremi postavke', Config::TEXT_DOMAIN ); ?>

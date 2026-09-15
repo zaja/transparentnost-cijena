@@ -238,6 +238,19 @@ Otvorite ga rijetko. Sve ima zadanu vrijednost koja radi.
 | Najniža cijena u 30 dana | vidi niže |
 | Podaci o trgovcu | ulaze u ime objavljene datoteke |
 | Vrijeme dnevne objave | ako vam rok nije 8:00 |
+| Rezerve | dvije, obje zadano uključene — vidi niže |
+
+### Rezerve
+
+Dvije stvari rade u pozadini kad uobičajeni put zakaže. Ostavite ih uključene osim ako imate razlog.
+
+**„Ako dnevno pokretanje zakaže, neka obradu gurnu posjeti trgovini."** Kad rok prođe a cjenik nije izašao, idući posjeti ga guraju — nakon što je stranica već poslana, pa kupac ne čeka.
+
+> **To nije zamjena za cron.** Dan bez ijednog posjeta ostaje bez cjenika, a posjet koji posluži predmemoriju do nas uopće ne dođe. Zato nalaz o nepostavljenom pokretanju ostaje i dok ovo radi.
+
+**„Dopiši sidrenu cijenu i ondje gdje je tema nije ispisala."** Neke teme i graditelji stranica cijenu crtaju na svoj način, pa je ne možemo dopuniti uobičajenim putem — tada se dopisuje u pregledniku.
+
+Učitava se **samo na stranicama na kojima uobičajeni put nije radio.** Ako sve radi, ovo se nikad ne pokrene i ne košta ništa.
 
 ### Najniža cijena u 30 dana
 

@@ -44,6 +44,12 @@ final class Postavke {
 	/** Sat do kojeg cjenik mora izaci, po vremenu trgovine. */
 	const ROK_OBJAVE = 'rok_objave';
 
+	/** Smije li promet gurati obradu kad cron ne radi. */
+	const PROMET_GURA = 'promet_gura';
+
+	/** Smije li se prikaz sidrene cijene dopisati JavaScriptom kad ga tema preskoci. */
+	const JS_REZERVA = 'js_rezerva';
+
 	/**
 	 * Zadane vrijednosti — jedno mjesto, da se ne pogadaju po kodu.
 	 *
@@ -60,6 +66,8 @@ final class Postavke {
 			self::NAZIV_TVRTKE    => get_bloginfo( 'name' ),
 			self::OZNAKA_OBJEKTA  => Config::OBJEKT_OZNAKA,
 			self::ROK_OBJAVE      => Config::ROK_OBJAVE_SAT,
+			self::PROMET_GURA     => true,
+			self::JS_REZERVA      => true,
 		);
 	}
 
@@ -114,6 +122,16 @@ final class Postavke {
 
 	public static function rok_objave_sat(): int {
 		return (int) self::daj( self::ROK_OBJAVE );
+	}
+
+	/** Smije li promet gurati obradu. Zadano da — trgovina bez crona inace ne izade. */
+	public static function promet_gura(): bool {
+		return (bool) self::daj( self::PROMET_GURA );
+	}
+
+	/** Smije li JavaScript dopisati prikaz ondje gdje ga tema nije ispisala. */
+	public static function js_rezerva(): bool {
+		return (bool) self::daj( self::JS_REZERVA );
 	}
 
 	/**

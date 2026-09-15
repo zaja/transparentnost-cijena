@@ -34,7 +34,13 @@ final class Plugin {
 		Prikaz\Prikaz::init();
 		Prikaz\Preuzimanje_Uloge::init();
 
+		// Rezerva za teme koje cijenu ispisuju mimo `get_price_html()`.
+		Prikaz\Rezerva::init();
+
 		Poslovi\Raspored::init();
+
+		// Rezerva za trgovinu bez crona: promet gura obradu nakon odgovora.
+		Poslovi\Promet::init();
 
 		// Snimatelj radi na frontendu — ondje gdje se dio dodataka uopce registrira.
 		Diagnostika\Snimatelj::init();

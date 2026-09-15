@@ -394,6 +394,8 @@ final class Admin {
 			Postavke::NAZIV_TVRTKE   => 'tekst',
 			Postavke::OZNAKA_OBJEKTA => 'tekst',
 			Postavke::ROK_OBJAVE     => 'sat',
+			Postavke::PROMET_GURA    => 'da_ne',
+			Postavke::JS_REZERVA     => 'da_ne',
 		);
 
 		foreach ( $polja as $ime => $vrsta ) {

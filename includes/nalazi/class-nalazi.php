@@ -231,7 +231,7 @@ final class Nalazi {
 		return ( new Nalaz( 'cron_nije_postavljen' ) )
 			->vaznost( Nalaz::ZAPREKA )
 			->naslov( __( 'Automatsko pokretanje nije postavljeno', Config::TEXT_DOMAIN ) )
-			->objasnjenje( __( 'Bez njega se cjenik objavljuje samo kad netko posjeti trgovinu, a to se dogada u nepredvidivo doba. Rok se tako ne moze jamciti.', Config::TEXT_DOMAIN ) )
+			->objasnjenje( __( 'Bez njega cjenik izlazi samo kad netko posjeti trgovinu, a to se dogada u nepredvidivo doba. Posjeti ga guraju kao rezervu, ali dan bez ijednog posjeta ostaje bez cjenika — a posjet koji posluzi predmemoriju do nas uopce ne dode. Rok se tako ne moze jamciti.', Config::TEXT_DOMAIN ) )
 			->postupak( __( 'U cPanelu otvorite Cron Jobs, kliknite Add New Cron Job, zalijepite redak ispod i spremite. Odmah ispod naslova cPanel pise trenutno vrijeme posluzitelja — ako se razlikuje od vremena u ovom retku, javite nam.', Config::TEXT_DOMAIN ) )
 			->doslovno( __( 'Redak za cPanel', Config::TEXT_DOMAIN ), $redak );
 	}

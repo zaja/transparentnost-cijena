@@ -35,6 +35,18 @@ final class Prikaz {
 	/** @var array<int,array|null> procitano u ovom zahtjevu */
 	private static $predmemorija = array();
 
+	/**
+	 * Koliko je puta u ovom zahtjevu prikaz doista ispisan.
+	 *
+	 * Broji se da bi se znalo treba li rezerva. Nula na stranici koja prikazuje
+	 * cijene znaci da tema ide mimo `get_price_html()` — vidi `Prikaz\Rezerva`.
+	 */
+	private static $ispisano = 0;
+
+	public static function ispisano(): int {
+		return self::$ispisano;
+	}
+
 	public static function init(): void {
 		add_filter( 'woocommerce_get_price_html', array( __CLASS__, 'uz_cijenu' ), self::PRIORITET, 2 );
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'stilovi' ) );
@@ -59,7 +71,13 @@ final class Prikaz {
 
 		$dodatak = Render::html( $podaci );
 
-		return ( '' === $dodatak ) ? $html : $html . $dodatak;
+		if ( '' === $dodatak ) {
+			return $html;
+		}
+
+		self::$ispisano++;
+
+		return $html . $dodatak;
 	}
 
 	/**
