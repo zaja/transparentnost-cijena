@@ -40,6 +40,65 @@ final class Admin {
 	public static function init(): void {
 		add_action( 'admin_menu', array( __CLASS__, 'meni' ) );
 		add_action( 'admin_enqueue_scripts', array( __CLASS__, 'stilovi' ) );
+
+		$osnova = plugin_basename( CJTR_FILE );
+
+		add_filter( 'plugin_action_links_' . $osnova, array( __CLASS__, 'veze_u_popisu' ) );
+		add_filter( 'plugin_row_meta', array( __CLASS__, 'meta_u_popisu' ), 10, 2 );
+	}
+
+	/**
+	 * Veze uz dodatak u popisu dodataka.
+	 *
+	 * Prva vodi ONAMO GDJE SE RADI, ne u postavke: administrator koji je upravo
+	 * aktivirao dodatak treba prvo postavljanje, a onaj koji ga ima treba stanje.
+	 * Postavke su druga stavka jer se otvaraju rijetko.
+	 *
+	 * @param string[] $veze
+	 * @return string[]
+	 */
+	public static function veze_u_popisu( $veze ): array {
+		$nase = array(
+			sprintf(
+				'<a href="%s"><strong>%s</strong></a>',
+				esc_url( self::url( Carobnjak::gotov() ? self::STRANICA_STANJE : self::STRANICA_CAROBNJAK ) ),
+				esc_html( Carobnjak::gotov() ? __( 'Stanje', Config::TEXT_DOMAIN ) : __( 'Prvo postavljanje', Config::TEXT_DOMAIN ) )
+			),
+			sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( self::url( self::STRANICA_POSTAVKE ) ),
+				esc_html__( 'Postavke', Config::TEXT_DOMAIN )
+			),
+		);
+
+		return array_merge( $nase, (array) $veze );
+	}
+
+	/**
+	 * Redak ispod opisa dodatka: dokumentacija i podrska.
+	 *
+	 * @param string[] $meta
+	 * @param string   $datoteka
+	 * @return string[]
+	 */
+	public static function meta_u_popisu( $meta, $datoteka ): array {
+		if ( plugin_basename( CJTR_FILE ) !== $datoteka ) {
+			return (array) $meta;
+		}
+
+		$meta[] = sprintf(
+			'<a href="%s" target="_blank" rel="noopener">%s</a>',
+			esc_url( 'https://github.com/zaja/transparentnost-cijena' ),
+			esc_html__( 'Dokumentacija', Config::TEXT_DOMAIN )
+		);
+
+		$meta[] = sprintf(
+			'<a href="%s">%s</a>',
+			esc_url( 'mailto:da@svejedobro.hr' ),
+			esc_html__( 'Podrska', Config::TEXT_DOMAIN )
+		);
+
+		return (array) $meta;
 	}
 
 	public static function meni(): void {

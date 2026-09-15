@@ -69,15 +69,21 @@ final class Render {
 	/**
 	 * Tekst uz dodatnu cijenu.
 	 *
-	 * Datum je u oznaci namjerno: bez njega bi "dodatna cijena" bila prazan pojam,
+	 * Datum je u oznaci namjerno: bez njega bi "sidrena cijena" bila prazan pojam,
 	 * a s njim kupac odmah zna na sto se brojka odnosi.
+	 *
+	 * IME SE ZOVE SVOJIM IMENOM
+	 *
+	 * Ranije je pisalo samo "Cijena 10.9.2026." — tocno, ali kupac iz toga ne zna
+	 * sto gleda ni zasto to ondje stoji. "Sidrena cijena" je naziv iz propisa, pa
+	 * onaj tko za njega cuje negdje drugdje prepozna istu stvar.
 	 */
 	private static function oznaka_sidrene( string $ref_datum ): string {
 		$ts = strtotime( $ref_datum );
 
 		return sprintf(
 			/* translators: %s = referentni datum */
-			__( 'Cijena %s', Config::TEXT_DOMAIN ),
+			__( 'Sidrena cijena %s', Config::TEXT_DOMAIN ),
 			$ts ? wp_date( 'j.n.Y.', $ts ) : $ref_datum
 		);
 	}

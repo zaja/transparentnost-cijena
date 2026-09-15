@@ -1,12 +1,13 @@
 <?php
 /**
  * Plugin Name:       Cjenovna transparentnost
- * Plugin URI:        https://example.org/cjenovna-transparentnost
- * Description:       Uskladenje WooCommerce trgovine s propisima o kontroli cijena — dnevna objava cjenika i isticanje dodatne (sidrene) cijene. Sve operacije rade iz WordPress admina, bez pristupa terminalu.
+ * Plugin URI:        https://github.com/zaja/transparentnost-cijena
+ * Description:       Uskladenje WooCommerce trgovine s propisima o kontroli cijena — dnevna objava cjenika i isticanje sidrene cijene. Ne mijenja cijene ni druge podatke o proizvodu; pise iskljucivo u vlastite tablice. Sve operacije rade iz WordPress admina, bez pristupa terminalu.
  * Version:           1.0.0
  * Requires at least: 5.9
  * Requires PHP:      7.4
- * Author:            —
+ * Author:            Goran Zajec
+ * Author URI:        https://svejedobro.hr
  * License:           GPL-2.0-or-later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       cjenovna-transparentnost
