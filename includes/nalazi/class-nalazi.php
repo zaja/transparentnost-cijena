@@ -686,7 +686,16 @@ final class Nalazi {
 		return $nalaz;
 	}
 
-	/** 16. Najniza cijena u 30 dana se jos ne prikazuje. */
+	/**
+	 * 16. Najniza cijena u 30 dana se jos ne prikazuje.
+	 *
+	 * ZASTO OVO MORA POSTOJATI I KAD JE EVIDENCIJA PRAZNA
+	 *
+	 * Prva verzija je sutjela kad evidencije uopce nema — a to je stanje SVAKE
+	 * nove instalacije. Trgovac ukljuci postavku, uz cijenu se ne pojavi nista, i
+	 * nista mu ne kaze zasto. Tocno ona vrsta tihog izostajanja koju ovaj dodatak
+	 * inace lovi kod drugih.
+	 */
 	private static function najniza_jos_ne_radi(): ?Nalaz {
 		if ( ! Postavke::najniza_30() || Dubina::dovoljna() ) {
 			return null;
@@ -694,12 +703,32 @@ final class Nalazi {
 
 		$seze = Dubina::seze_do();
 
+		$nalaz = ( new Nalaz( 'najniza_jos_ne_radi' ) )
+			->vaznost( Nalaz::SAVJET )
+			->postupak( __( 'Imate li stariju povijest cijena iz drugog dodatka, mozemo je preuzeti i prikaz moze poceti odmah. Ako je nemate, ceka se.', Config::TEXT_DOMAIN ) )
+			->ekran( Admin::url( Admin::STRANICA_NAPREDNO ), __( 'Preuzmi stariju povijest', Config::TEXT_DOMAIN ) );
+
 		if ( 0 === $seze ) {
-			return null;
+			// Nova instalacija: evidencija pocinje danas, pa se ne zna ni kad ce
+			// prikaz poceti. Obecati datum bilo bi pogadanje.
+			return $nalaz
+				->naslov(
+					sprintf(
+						/* translators: %d = broj dana */
+						__( 'Najniza cijena u %d dana ukljucena je, ali se jos ne prikazuje', Config::TEXT_DOMAIN ),
+						Dubina::DANA
+					)
+				)
+				->objasnjenje(
+					sprintf(
+						/* translators: %d = broj dana */
+						__( 'Evidencija o cijenama je prazna — pocinje se voditi od instalacije dodatka. Dok ne bude pokrivala %1$d dana, ta se tvrdnja ne smije iznijeti: brojka izracunata iz kraceg razdoblja nije najniza cijena u %1$d dana. Do tada se uz cijenu ne prikazuje nista.', Config::TEXT_DOMAIN ),
+						Dubina::DANA
+					)
+				);
 		}
 
-		return ( new Nalaz( 'najniza_jos_ne_radi' ) )
-			->vaznost( Nalaz::SAVJET )
+		return $nalaz
 			->naslov(
 				sprintf(
 					/* translators: 1: broj dana, 2: broj dana */
@@ -710,15 +739,13 @@ final class Nalazi {
 			)
 			->objasnjenje(
 				sprintf(
-					/* translators: 1: datum dokle sezemo, 2: datum dokle treba */
+					/* translators: 1: datum dokle sezemo, 2: datum dokle treba, 3: broj dana */
 					__( 'Nasa evidencija o cijenama seze do %1$s, a za tvrdnju o %3$d dana treba sezati do %2$s. Do tada se ne prikazuje nista — brojka izracunata iz kraceg razdoblja ne bi bila najniza cijena u %3$d dana.', Config::TEXT_DOMAIN ),
 					wp_date( 'j.n.Y.', $seze ),
 					wp_date( 'j.n.Y.', Dubina::treba_do() ),
 					Dubina::DANA
 				)
-			)
-			->postupak( __( 'Imate li stariju povijest cijena iz drugog dodatka, mozemo je preuzeti i prikaz moze poceti odmah.', Config::TEXT_DOMAIN ) )
-			->ekran( Admin::url( Admin::STRANICA_NAPREDNO ), __( 'Preuzmi stariju povijest', Config::TEXT_DOMAIN ) );
+			);
 	}
 
 	/* ------------------------------------------------------------- interno */

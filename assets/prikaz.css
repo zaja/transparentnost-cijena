@@ -28,11 +28,20 @@
 
 .cjtr-dodatne {
 	display: block;
-	margin-top: .35em;
-	font-size: .8em;
+	margin-top: .4em;
+
+	/*
+	 * VELICINA SE VEZE UZ KORIJEN DOKUMENTA, NE UZ CIJENU.
+	 *
+	 * `em` se mnozi s onim sto tema radi s cijenom. Na stranici artikla je cijena
+	 * 1,5em i vise, pa je nasa "0,8em" ispadala VECA od obicnog teksta — a redak
+	 * koji objasnjava cijenu ne smije biti krupniji od nje.
+	 *
+	 * Ranije je to bilo zakrpano posebnim pravilom za `.entry-summary`. Zakrpa je
+	 * radila na temama koje tu klasu imaju, a blokovske je nemaju — pa je ondje
+	 * redak opet bio prevelik. `rem` ne ovisi ni o jednoj temi.
+	 */
 	line-height: 1.45;
-	font-weight: 400;
-	/* Cijena se cesto nasljeduje kao velika i podebljana — resetiramo. */
 	text-transform: none;
 	letter-spacing: normal;
 
@@ -90,8 +99,32 @@
    kao jedna tvrdnja ili se ne cita. */
 
 .cjtr-dodatna-iznos {
-	font-weight: 600;
 	white-space: nowrap;
+}
+
+/*
+ * Iznos se NE istice podebljanjem i ne smije se sam povecavati.
+ *
+ * Teme i dodatni CSS trgovine cesto daju `span.amount { font-weight: 700 }` i
+ * `font-size: 1.3em`. Oboje bi unutar naseg retka ponovno izvuklo brojku iz
+ * teksta koji je objasnjava — a sidrena cijena je referenca, ne ponuda.
+ *
+ * Isti razlog kao kod boje: cim su dvije polovice retka razlicito istaknute,
+ * brojka vuce pogled, a tvrdnja se raspada na dvoje.
+ */
+.cjtr-dodatne,
+.cjtr-dodatne * {
+	font-weight: 400 !important;
+}
+
+/* Omotac nosi jedinu velicinu u bloku, i to u `rem`. */
+.cjtr-dodatne {
+	font-size: .8rem !important;
+}
+
+/* Sve unutra ga slijedi — nista se ne smije samo povecati. */
+.cjtr-dodatne * {
+	font-size: 1em !important;
 }
 
 /* Dodatna cijena NIKAD nije precrtana — nije referenca snizenja.
@@ -101,33 +134,14 @@
 	text-decoration: none !important;
 }
 
-/* Stranica artikla: ondje je cijena krupna (`.product-info .price` je 1.5em i
-   podebljana), pa nasa `.8em` ispadne VECA od obicnog teksta. Velicina se zato
-   ovdje veze uz korijen dokumenta, ne uz cijenu — `em` bi se pomnozio s onim sto
-   tema radi s cijenom i rezultat bi ovisio o temi.
-
-   Vezano uz `.entry-summary` / `.summary`, ne uz `.single-product`: mreza
-   povezanih proizvoda stoji na istoj stranici, dakle pod istom klasom na <body>.
-   Pravilo vezano uz nju smanjilo bi i nju, a ondje je velicina u redu. Obje klase
-   jer je `entry-summary` WooCommerceova, a `summary` starija — Flatsome ima obje. */
-.single-product .entry-summary .cjtr-dodatne,
-.single-product .summary .cjtr-dodatne {
-	font-size: .85rem;
-}
-
-/* Brojka unutar bloka ne smije se sama povecavati. Dodatni CSS trgovine daje
-   `span.amount { font-size: 1.3em }`, sto bi gornjih .85rem vratilo na 1.1rem i
-   opet razdvojilo dva retka po velicini. Vrijedi SAMO na stranici artikla — u
-   mrezi je zatecena velicina u redu i ne dira se. */
-.single-product .entry-summary .cjtr-dodatne .cjtr-dodatna-iznos,
-.single-product .entry-summary .cjtr-dodatne .cjtr-dodatna-iznos *,
-.single-product .summary .cjtr-dodatne .cjtr-dodatna-iznos,
-.single-product .summary .cjtr-dodatne .cjtr-dodatna-iznos * {
-	font-size: 1em !important;
-}
+/*
+ * Posebnih pravila za stranicu artikla vise NEMA.
+ *
+ * Postojala su dok je velicina ovisila o cijeni: ondje je cijena krupna, pa je
+ * trebalo zakrpu. Otkad je velicina u `rem`, jedno pravilo vrijedi svugdje —
+ * u mrezi, na stranici artikla, u widgetu i u bloku.
+ */
 
 @media (max-width: 480px) {
-	.cjtr-dodatne { font-size: .75em; }
-	.single-product .entry-summary .cjtr-dodatne,
-	.single-product .summary .cjtr-dodatne { font-size: .8rem; }
+	.cjtr-dodatne { font-size: .75rem !important; }
 }

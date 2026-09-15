@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -115,6 +115,15 @@ dodatka uopce ne dode. Dodatak na to upozorava dok redak nije postavljen.
 Tada je nas prikaz zadano iskljucen. Kupac koji vidi dvije tvrdnje o istoj
 stvari ne zna kojoj vjerovati, a to je gore nego nijedna.
 
+= Ukljucio sam najnizu cijenu u 30 dana, a ne prikazuje se =
+
+Na novoj instalaciji je to ocekivano. Evidencija o cijenama vodi se od
+instalacije dodatka, pa jos ne pokriva 30 dana — a brojka izracunata iz kraceg
+razdoblja nije najniza cijena u 30 dana. Ekran Stanje javlja od kojeg datuma
+prikaz moze poceti.
+
+Imate li stariju povijest iz drugog dodatka, uvoz je skracuje na nulu.
+
 = Sidrena cijena mi se ne prikazuje =
 
 Ako tema cijenu ispisuje na svoj nacin, uobicajeni put je ne moze dopuniti.
@@ -125,6 +134,13 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.1.1 =
+* Kad je najniza cijena u 30 dana ukljucena a evidencija jos prazna, ekran
+  Stanje to sada javlja. Ranije je sutio, pa se na novoj instalaciji cinilo da
+  postavka ne radi.
+* Redak sa sidrenom cijenom je manji i vise nije podebljan, i velicina mu vise
+  ne ovisi o temi.
 
 = 1.1.0 =
 * Kad dnevno pokretanje zakaze, obradu guraju posjeti trgovini — nakon sto je

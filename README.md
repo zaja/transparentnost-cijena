@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.1.1** — redak sa sidrenom cijenom je manji i bez podebljanja, veličina mu više ne ovisi o temi; ekran Stanje javlja kad je najniža u 30 dana uključena a evidencija još prazna.
+
 **1.1.0** — dvije rezerve protiv tihog izostajanja: obradu guraju posjeti kad dnevno pokretanje zakaže; sidrena cijena se dopisuje JavaScriptom na temama koje zaobiđu uobičajeni put.
 
 **1.0.1** — četiri popravka nađena usporedbom s drugim rješenjem: naziv varijante, cijena s porezom, oznaka za artikl bez šifre, izjava o HPOS-u.

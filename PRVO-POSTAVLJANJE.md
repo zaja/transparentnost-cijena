@@ -256,7 +256,9 @@ Učitava se **samo na stranicama na kojima uobičajeni put nije radio.** Ako sve
 
 Imate li već drugi dodatak koji to prikazuje, **naš prikaz je zadano isključen** — i piše koji je to dodatak. Kupac koji vidi dvije tvrdnje o istoj stvari ne zna kojoj vjerovati, a to je gore nego nijedna.
 
-Uključite li je, prikazuje se tek kad naša evidencija bude dovoljno duboka. Piše i koliko dana treba čekati. **Dodatak instaliran prije deset dana ne smije tvrditi da zna najnižu u trideset** — to nije približno točno nego netočno.
+Uključite li je, prikazuje se tek kad naša evidencija bude dovoljno duboka. **Dodatak instaliran prije deset dana ne smije tvrditi da zna najnižu u trideset** — to nije približno točno nego netočno.
+
+> **Na novoj instalaciji to znači: uključili ste opciju, a uz cijenu se ne pojavljuje ništa.** Tako i treba biti — evidencija se vodi od instalacije i još ne pokriva 30 dana. Na ekranu **Stanje** stoji nalaz koji to kaže, s datumom od kojeg prikaz može početi.
 
 Imate li stariju povijest iz drugog dodatka, uvoz je skraćuje na nulu.
 
