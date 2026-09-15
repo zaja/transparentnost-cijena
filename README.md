@@ -42,7 +42,7 @@ Tri ekrana i čarobnjak koji se pojavi jednom pa nestane.
 | | |
 |---|---|
 | **Stanje** | odgovara na jedno pitanje: radi li sve. Kad radi, kratak je i dosadan. |
-| **Artikli** | uvoz na vrhu, ručna dopuna ispod. |
+| **Artikli** | uvoz tablice i prikupljanje onoga što trgovina već ima. Pojedinačno se uređuje na samom proizvodu. |
 | **Postavke** | referentni datum, djelatnost, podaci o trgovcu, vrijeme objave, rezerve. |
 | **Napredno** | sve što ne treba svaki dan. |
 
@@ -77,6 +77,8 @@ Za dnevnu objavu treba jedan cron redak u cPanelu — dodatak ga ispiše gotovog
 Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
+
+**1.1.2** — ekran Artikli nema više tablicu za ručni unos u nizu; podaci ulaze uvozom, prikupljanjem ili na samom proizvodu.
 
 **1.1.1** — redak sa sidrenom cijenom je manji i bez podebljanja, veličina mu više ne ovisi o temi; ekran Stanje javlja kad je najniža u 30 dana uključena a evidencija još prazna.
 

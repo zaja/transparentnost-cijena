@@ -1,19 +1,19 @@
 <?php
 /**
- * Ekran ARTIKLI — uvoz na vrhu, rucna dopuna ispod.
+ * Ekran ARTIKLI — kako podaci za cjenik dolaze u dodatak.
  *
- * Redoslijed nije kozmeticki. Iznad crte je ono sto rjesava tisuce artikala, ispod
- * ono sto rjesava desetak. Raniji ekran ih je prikazivao kao ravnopravne, pa je
- * najsporiji put izgledao kao glavni — a tri tisuce barkodova nitko nece utipkati.
+ * DVA PUTA, NE TRI
+ *
+ * Skupno: uvoz tablice iz programa koji vodi robu, i "pokupi sto trgovina vec ima".
+ * Pojedinacno: na samom proizvodu, u kartici "Podaci za cjenik", uz cijenu i zalihu.
+ *
+ * Ranije je ovdje stajala i treca tablica — siroka resetka polja za rucni unos u
+ * nizu. Maknuta je. Nije rjesavala nikakav slucaj koji prva dva puta ne rjesavaju
+ * bolje: tri tisuce barkodova nitko nece utipkati, a jedan se ispravlja ondje gdje
+ * se artikl ionako ureduje. Sto je ostajalo bio je ekran koji izgleda kao posao.
  *
  * @var array      $sazetak
  * @var array      $po_poljima
- * @var object[]   $redci
- * @var array      $neprimjenjivo
- * @var string     $filtar
- * @var int        $stranica
- * @var int        $po_stranici
- * @var int        $ukupno_redaka
  * @var array|null $uvoz
  * @var array|null $mapiranje
  * @var string     $obavijest
@@ -58,23 +58,33 @@ $polja_uvoza = array(
 			);
 			?>
 		</p>
-		<p class="<?php echo esc_attr( Config::css( 'sazetak-sitno' ) ); ?>">
-			<?php foreach ( $po_poljima as $kljuc => $p ) : ?>
-				<?php if ( $p['nedostaje'] < 1 ) : ?>
-					<?php continue; ?>
-				<?php endif; ?>
-				<a href="<?php echo esc_url( Admin::url( Admin::STRANICA_ARTIKLI, array( 'filtar' => $kljuc ) ) ); ?>">
-					<?php
-					printf(
-						/* translators: 1: naziv polja, 2: koliko nedostaje */
-						esc_html__( '%1$s: nedostaje %2$s', Config::TEXT_DOMAIN ),
-						esc_html( $p['naziv'] ),
-						esc_html( number_format_i18n( $p['nedostaje'] ) )
-					);
-					?>
-				</a>
-			<?php endforeach; ?>
-		</p>
+		<?php
+		/*
+		 * Brojke su tvrdnja, ne poveznica.
+		 *
+		 * Ranije je svaka vodila u filtar rucne tablice. Tablice vise nema, a
+		 * poveznica koja nema kamo voditi gora je od obicnog teksta: obeca radnju
+		 * pa je ne izvede. Koji su to artikli, pokazuje predlozak nize — u njemu
+		 * su vasi artikli, a prazne celije su tocno ovo sto ovdje pise.
+		 */
+		$manjkovi = array();
+		foreach ( $po_poljima as $p ) {
+			if ( $p['nedostaje'] < 1 ) {
+				continue;
+			}
+			$manjkovi[] = sprintf(
+				/* translators: 1: naziv polja, 2: koliko nedostaje */
+				__( '%1$s: nedostaje %2$s', Config::TEXT_DOMAIN ),
+				$p['naziv'],
+				number_format_i18n( $p['nedostaje'] )
+			);
+		}
+		?>
+		<?php if ( ! empty( $manjkovi ) ) : ?>
+			<p class="<?php echo esc_attr( Config::css( 'sazetak-sitno' ) ); ?>">
+				<?php echo esc_html( implode( ' · ', $manjkovi ) ); ?>
+			</p>
+		<?php endif; ?>
 	</div>
 
 	<?php /* ================== POSEBNI OBLICI PRODAJE ================== */ ?>
@@ -374,141 +384,14 @@ $polja_uvoza = array(
 		<?php endif; ?>
 	</div>
 
-	<hr class="<?php echo esc_attr( Config::css( 'granica' ) ); ?>">
-
-	<?php /* ======================= RUCNA DOPUNA ======================= */ ?>
-	<h2><?php esc_html_e( 'Rucna dopuna', Config::TEXT_DOMAIN ); ?></h2>
-
-	<p class="<?php echo esc_attr( Config::css( 'uvod' ) ); ?>">
-		<?php esc_html_e( 'Za pojedinacne artikle i ispravke. Poredano po prometu, pa ako stanete na pola, stali ste na pravom mjestu.', Config::TEXT_DOMAIN ); ?>
-	</p>
-
+	<?php /* ==================== POJEDINACNI ARTIKL ==================== */ ?>
 	<p class="<?php echo esc_attr( Config::css( 'napomena' ) ); ?>">
-		<?php esc_html_e( 'Ista polja postoje i na samom proizvodu: otvorite proizvod i potrazite karticu "Podaci za cjenik", uz Opcenito, Inventar i Otpremu. Ondje su i polja koja ovdje nema — jedinica mjere, oblik prodaje i oznaka "ne odnosi se" po polju. Poveznica "otvori proizvod" u svakom retku vodi ravno onamo.', Config::TEXT_DOMAIN ); ?>
-	</p>
-
-	<p class="<?php echo esc_attr( Config::css( 'filtri' ) ); ?>">
-		<a class="<?php echo esc_attr( '' === $filtar ? Config::css( 'filtar-aktivan' ) : '' ); ?>"
-			href="<?php echo esc_url( Admin::url( Admin::STRANICA_ARTIKLI ) ); ?>">
-			<?php esc_html_e( 'sve', Config::TEXT_DOMAIN ); ?>
+		<?php esc_html_e( 'Jedan artikl i ispravke rjesavaju se na samom proizvodu: otvorite proizvod i potrazite karticu "Podaci za cjenik", uz Opcenito, Inventar i Otpremu. Ondje su sva polja — barkod, marka, neto kolicina, jedinica mjere, oblik prodaje i oznaka "ne odnosi se" po polju, s razlogom.', Config::TEXT_DOMAIN ); ?>
+		<a href="<?php echo esc_url( admin_url( 'edit.php?post_type=product' ) ); ?>">
+			<?php esc_html_e( 'Otvori proizvode', Config::TEXT_DOMAIN ); ?>
 		</a>
-		<?php foreach ( $po_poljima as $kljuc => $p ) : ?>
-			&middot;
-			<a class="<?php echo esc_attr( $filtar === $kljuc ? Config::css( 'filtar-aktivan' ) : '' ); ?>"
-				href="<?php echo esc_url( Admin::url( Admin::STRANICA_ARTIKLI, array( 'filtar' => $kljuc ) ) ); ?>">
-				<?php echo esc_html( mb_strtolower( $p['naziv'] ) ); ?>
-			</a>
-		<?php endforeach; ?>
 	</p>
 
-	<?php if ( empty( $redci ) ) : ?>
-		<p><?php esc_html_e( 'Nema artikala kojima nesto nedostaje. Gotovo.', Config::TEXT_DOMAIN ); ?></p>
-	<?php else : ?>
-		<form method="post">
-			<?php wp_nonce_field( Config::nonce( 'artikli' ) ); ?>
-
-			<table class="<?php echo esc_attr( Config::css( 'stavke' ) . ' ' . Config::css( 'unos' ) ); ?>">
-				<thead>
-					<tr>
-						<th scope="col"><?php esc_html_e( 'Artikl', Config::TEXT_DOMAIN ); ?></th>
-						<th scope="col"><?php esc_html_e( 'Barkod', Config::TEXT_DOMAIN ); ?></th>
-						<th scope="col"><?php esc_html_e( 'Marka', Config::TEXT_DOMAIN ); ?></th>
-						<th scope="col"><?php esc_html_e( 'Kolicina', Config::TEXT_DOMAIN ); ?></th>
-						<th scope="col"><?php esc_html_e( 'Ne odnosi se', Config::TEXT_DOMAIN ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<?php foreach ( $redci as $r ) : ?>
-						<?php $id = (int) $r->entity_id; ?>
-						<tr>
-							<td>
-								<?php echo esc_html( mb_substr( (string) $r->naziv, 0, 55 ) ); ?>
-								<span class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
-									<?php echo esc_html( '' !== $r->sku ? $r->sku : '#' . $id ); ?>
-								</span>
-								<?php
-								// Poveznica na KONKRETAN proizvod, ne opca uputa. Ovdje se ureduje
-								// nekoliko polja; sve ostalo o artiklu je ondje.
-								$veza = CJTR\Podaci\Woo_Polja::gdje_se_mijenja( $id, Config::POLJE_BARKOD );
-								?>
-								<?php if ( '' !== $veza ) : ?>
-									<a class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>" href="<?php echo esc_url( $veza ); ?>" target="_blank" rel="noopener">
-										<?php esc_html_e( 'otvori proizvod', Config::TEXT_DOMAIN ); ?>
-									</a>
-								<?php endif; ?>
-							</td>
-							<td>
-								<input type="text" name="r[<?php echo $id; ?>][barkod]"
-									value="<?php echo esc_attr( (string) $r->barkod ); ?>" size="14">
-							</td>
-							<td>
-								<input type="text" name="r[<?php echo $id; ?>][marka]"
-									value="<?php echo esc_attr( (string) $r->marka ); ?>" size="14">
-							</td>
-							<td>
-								<input type="text" name="r[<?php echo $id; ?>][neto_kolicina]"
-									value="<?php echo esc_attr( (string) $r->neto_kolicina ); ?>" size="6">
-								<input type="text" name="r[<?php echo $id; ?>][jedinica_mjere]"
-									value="<?php echo esc_attr( (string) $r->jedinica_mjere ); ?>" size="4">
-							</td>
-							<td class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
-								<?php foreach ( Config::POLJA as $polje => $meta ) : ?>
-									<label>
-										<input type="checkbox" name="np[<?php echo $id; ?>][]" value="<?php echo esc_attr( $polje ); ?>"
-											<?php checked( isset( $neprimjenjivo[ $id ][ $polje ] ) ); ?>>
-										<?php echo esc_html( mb_strtolower( $meta['naziv'] ) ); ?>
-									</label>
-								<?php endforeach; ?>
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-
-			<p>
-				<label>
-					<?php esc_html_e( 'Razlog za "ne odnosi se":', Config::TEXT_DOMAIN ); ?>
-					<input type="text" name="np_razlog" size="60"
-						placeholder="<?php esc_attr_e( 'npr. vlastita proizvodnja, barkod nije dodijeljen', Config::TEXT_DOMAIN ); ?>">
-				</label>
-			</p>
-			<p class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
-				<?php esc_html_e( 'Oznaka bez razloga nije odluka nego pogadanje, pa se ne prima. Razlog, vase ime i datum ostaju zapisani.', Config::TEXT_DOMAIN ); ?>
-			</p>
-
-			<p>
-				<button class="button button-primary" name="radnja" value="spremi">
-					<?php esc_html_e( 'Spremi', Config::TEXT_DOMAIN ); ?>
-				</button>
-			</p>
-		</form>
-
-		<?php
-		$stranica_ukupno = (int) ceil( $ukupno_redaka / $po_stranici );
-		?>
-		<?php if ( $stranica_ukupno > 1 ) : ?>
-			<p class="<?php echo esc_attr( Config::css( 'stranicenje' ) ); ?>">
-				<?php
-				printf(
-					/* translators: 1: trenutna, 2: ukupno */
-					esc_html__( 'Stranica %1$d od %2$d', Config::TEXT_DOMAIN ),
-					(int) $stranica,
-					(int) $stranica_ukupno
-				);
-				?>
-				<?php if ( $stranica > 1 ) : ?>
-					<a href="<?php echo esc_url( Admin::url( Admin::STRANICA_ARTIKLI, array( 'filtar' => $filtar, 'stranica' => $stranica - 1 ) ) ); ?>">
-						<?php esc_html_e( 'natrag', Config::TEXT_DOMAIN ); ?>
-					</a>
-				<?php endif; ?>
-				<?php if ( $stranica < $stranica_ukupno ) : ?>
-					<a href="<?php echo esc_url( Admin::url( Admin::STRANICA_ARTIKLI, array( 'filtar' => $filtar, 'stranica' => $stranica + 1 ) ) ); ?>">
-						<?php esc_html_e( 'dalje', Config::TEXT_DOMAIN ); ?>
-					</a>
-				<?php endif; ?>
-			</p>
-		<?php endif; ?>
-	<?php endif; ?>
 
 	<?php Admin::opseg(); ?>
 </div>

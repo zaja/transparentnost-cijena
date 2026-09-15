@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.1.1
+Stable tag: 1.1.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -134,6 +134,14 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.1.2 =
+* Ekran Artikli vise nema tablicu za rucni unos u nizu. Podaci ulaze na dva
+  nacina: skupno uvozom tablice ili prikupljanjem onoga sto trgovina vec ima,
+  a pojedinacno na samom proizvodu, u kartici "Podaci za cjenik" — gdje su i
+  polja kojih na ekranu Artikli nikad nije ni bilo.
+* Brojke o tome sto nedostaje ostaju na ekranu, ali vise nisu poveznice: vodile
+  su u filtar tablice koje nema.
 
 = 1.1.1 =
 * Kad je najniza cijena u 30 dana ukljucena a evidencija jos prazna, ekran

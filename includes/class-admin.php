@@ -259,11 +259,11 @@ final class Admin {
 	}
 
 	/**
-	 * 2. ARTIKLI — uvoz na vrhu, rucna dopuna ispod.
+	 * 2. ARTIKLI — kako podaci za cjenik dolaze u dodatak.
 	 *
-	 * Redoslijed nije kozmeticki: iznad crte je ono sto rjesava tisuce artikala,
-	 * ispod ono sto rjesava desetak. Raniji ekran ih je prikazivao kao ravnopravne,
-	 * pa je najsporiji put izgledao kao glavni.
+	 * Skupno se rjesava ovdje (uvoz tablice, pokupi sto trgovina vec ima),
+	 * pojedinacno na samom proizvodu. Trece tablice — resetke polja za rucni unos
+	 * u nizu — vise nema: nije rjesavala slucaj koji ta dva puta ne rjesavaju bolje.
 	 */
 	public static function prikazi_artikle(): void {
 		self::provjeri_ovlasti();
@@ -272,18 +272,6 @@ final class Admin {
 
 		$sazetak    = Podaci\Potpunost::sazetak();
 		$po_poljima = Podaci\Potpunost::po_poljima();
-
-		$filtar   = isset( $_GET['filtar'] ) ? sanitize_key( wp_unslash( $_GET['filtar'] ) ) : '';
-		$stranica = isset( $_GET['stranica'] ) ? max( 1, (int) $_GET['stranica'] ) : 1;
-
-		if ( '' !== $filtar && ! isset( Config::POLJA[ $filtar ] ) ) {
-			$filtar = '';
-		}
-
-		$po_stranici   = 25;
-		$ukupno_redaka = Podaci\Potpunost::broj_nepotpunih( $filtar );
-		$redci         = Podaci\Potpunost::nepotpuni( $filtar, $po_stranici, ( $stranica - 1 ) * $po_stranici );
-		$neprimjenjivo = Podaci\Neprimjenjivo::za_vise( wp_list_pluck( $redci, 'entity_id' ) );
 
 		$uvoz      = self::$uvoz;
 		$mapiranje = self::$mapiranje;
@@ -438,7 +426,7 @@ final class Admin {
 	}
 
 	/**
-	 * Ekran Artikli: uvoz i rucna dopuna.
+	 * Ekran Artikli: uvoz, prikupljanje i imenovanje oblika prodaje.
 	 *
 	 * Uvoz ide u tri koraka, i nijedan se ne preskace: odaberi datoteku, povezi
 	 * stupce, pogledaj sto bi se dogodilo. Tek onda upis.
@@ -473,7 +461,9 @@ final class Admin {
 			return ( '' !== $s->poruka ) ? $s->poruka : __( 'Pokrenuto — pokupit cemo sto trgovina vec ima.', Config::TEXT_DOMAIN );
 		}
 
-		return self::spremi_retke();
+		// Nepoznata radnja ne radi nista. Ranije je ovdje bio pad na spremi_retke(),
+		// koji je citao $_POST['r'] — obrasca s tim poljima na ovom ekranu vise nema.
+		return '';
 	}
 
 	/** Korak 1: datoteka je poslana, citamo samo zaglavlje. */
@@ -658,95 +648,6 @@ final class Admin {
 		}
 
 		return $poruka;
-	}
-
-	/** Spremi rucne izmjene iz tablice na ekranu Artikli. */
-	private static function spremi_retke(): string {
-		$redci  = isset( $_POST['r'] ) && is_array( $_POST['r'] ) ? wp_unslash( $_POST['r'] ) : array();
-		$np     = isset( $_POST['np'] ) && is_array( $_POST['np'] ) ? wp_unslash( $_POST['np'] ) : array();
-		$razlog = isset( $_POST['np_razlog'] ) ? sanitize_text_field( wp_unslash( $_POST['np_razlog'] ) ) : '';
-
-		if ( empty( $redci ) ) {
-			return '';
-		}
-
-		$spremljeno = 0;
-		$poruke     = array();
-
-		foreach ( $redci as $id => $polja ) {
-			$id = (int) $id;
-			if ( $id <= 0 ) {
-				continue;
-			}
-
-			$trazene = isset( $np[ $id ] ) ? array_map( 'sanitize_key', (array) $np[ $id ] ) : array();
-
-			// Dodatna cijena ide vlastitim putem, jer nosi vlastitu provenijenciju.
-			if ( isset( $polja['sidrena_cijena'] ) && '' !== trim( (string) $polja['sidrena_cijena'] ) ) {
-				$ishod = Podaci\Sidrena_Unos::upisi(
-					$id,
-					sanitize_text_field( (string) $polja['sidrena_cijena'] ),
-					Config::IZVOR_RUCNI_UNOS,
-					__( 'rucni unos u adminu', Config::TEXT_DOMAIN )
-				);
-
-				if ( empty( $ishod['ok'] ) ) {
-					$poruke[] = sprintf( '#%d: %s', $id, $ishod['poruka'] );
-				}
-			}
-
-			foreach ( Config::POLJA as $polje => $meta ) {
-				if ( in_array( $polje, $trazene, true ) ) {
-					if ( '' === $razlog ) {
-						$poruke[] = __( 'Oznaka "ne odnosi se na ovaj artikl" trazi razlog — bez njega se ne moze obraniti.', Config::TEXT_DOMAIN );
-						continue;
-					}
-					Podaci\Neprimjenjivo::oznaci( $id, $polje, $razlog );
-					continue;
-				}
-
-				Podaci\Neprimjenjivo::skini( $id, $polje );
-
-				if ( ! isset( $polja[ $polje ] ) && ! isset( $polja[ $meta['stupci'][0] ] ) ) {
-					continue;
-				}
-
-				// Isto pravilo kao kod uvoza: WooCommerceova vrijednost se ne prepisuje.
-				if ( in_array( $polje, array( Config::POLJE_BARKOD, Config::POLJE_MARKA ), true )
-					&& Podaci\Woo_Polja::woo_ima( $id, $polje ) ) {
-					$poruke[] = sprintf(
-						/* translators: 1: ID artikla, 2: naziv polja */
-						__( '#%1$d: %2$s nije upisana — ta vrijednost vec stoji u WooCommerceu i ona vrijedi.', Config::TEXT_DOMAIN ),
-						$id,
-						mb_strtolower( Config::POLJA[ $polje ]['naziv'] )
-					);
-					continue;
-				}
-
-				$ishod = Podaci\Zapis_Podataka::upisi(
-					$id,
-					$polje,
-					array_map( 'sanitize_text_field', (array) $polja ),
-					Config::IZVOR_PODATKA_RUCNO
-				);
-
-				if ( ! $ishod['ok'] || '' !== $ishod['poruka'] ) {
-					$poruke[] = sprintf( '#%d: %s', $id, $ishod['poruka'] );
-				}
-			}
-
-			$spremljeno++;
-		}
-
-		$poruke = array_unique( array_filter( $poruke ) );
-
-		return trim(
-			sprintf(
-				/* translators: %d = broj artikala */
-				__( 'Spremljeno %d artikala.', Config::TEXT_DOMAIN ),
-				$spremljeno
-			) . ' ' . implode( ' ', array_slice( $poruke, 0, 5 ) )
-		);
 	}
 
 	/**

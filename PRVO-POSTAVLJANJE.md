@@ -181,11 +181,9 @@ Nemate tablicu? **„Preuzmi predložak s vašim artiklima"** daje CSV s vašim 
 
 **„Pokupi što trgovina već ima"** traži barkode, marke i količine koje su već negdje u WooCommerceu. Ništa ne prepisuje.
 
-### Ručna dopuna — dolje
+### Pojedinačni artikl — na samom proizvodu
 
-Za pojedinačne artikle i ispravke. Poredano po prometu, pa ako stanete na pola, stali ste na pravom mjestu.
-
-U svakom retku stoji poveznica **„otvori proizvod"** koja vodi ravno na taj artikl.
+Ekran Artikli rješava skupno. Jedan artikl i ispravke rješavaju se ondje gdje se artikl ionako uređuje — u kartici **„Podaci za cjenik"** na samom proizvodu, opisanoj odmah ispod.
 
 ---
 
@@ -195,15 +193,15 @@ Otvorite bilo koji proizvod. Uz kartice **Općenito**, **Inventar** i **Otprema*
 
 > ### Podaci za cjenik
 
-Ondje su barkod, marka, neto količina, oblik prodaje i oznaka „ne odnosi se" po polju — dakle i ono čega na ekranu Artikli nema. Kod varijabilnih proizvoda ista polja stoje uz svaku varijantu.
+Ondje su barkod, marka, neto količina, jedinica mjere, oblik prodaje i oznaka „ne odnosi se" po polju — **sva polja**, i to je jedino mjesto na kojem su sva. Kod varijabilnih proizvoda ista polja stoje uz svaku varijantu.
 
 **Redoslijed koji preporučamo:**
 
 | Koliko artikala | Čime |
 |---|---|
-| tisuće | **uvoz** — ekran Artikli, gore |
-| desetak | ekran Artikli, ručna dopuna dolje |
-| jedan, dok ga ionako uređujete | **kartica na proizvodu** |
+| tisuće | **uvoz tablice** — ekran Artikli |
+| ono što trgovina već negdje ima | **„Pokupi što trgovina već ima"** — ekran Artikli |
+| jedan, ili ispravak | **kartica na proizvodu** |
 
 ### Barkod i marka: WooCommerce ima prednost
 

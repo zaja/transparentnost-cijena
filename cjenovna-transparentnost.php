@@ -3,7 +3,7 @@
  * Plugin Name:       Cjenovna transparentnost
  * Plugin URI:        https://github.com/zaja/transparentnost-cijena
  * Description:       Uskladenje WooCommerce trgovine s propisima o kontroli cijena — dnevna objava cjenika i isticanje sidrene cijene. Ne mijenja cijene ni druge podatke o proizvodu; pise iskljucivo u vlastite tablice. Sve operacije rade iz WordPress admina, bez pristupa terminalu.
- * Version:           1.1.1
+ * Version:           1.1.2
  * Requires at least: 5.9
  * Requires PHP:      7.4
  * Requires Plugins:  woocommerce

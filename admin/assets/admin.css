@@ -475,8 +475,7 @@
 .cjtr-napredno-popis h2 { font-size: 14px; margin: 0 0 6px; }
 .cjtr-napredno-popis p { margin: 0 0 6px; max-width: 76ch; color: #50575e; }
 
-.cjtr-granica { margin: 34px 0 24px; border: 0; border-top: 2px solid #dcdcde; max-width: 900px; }
+/* `cjtr-granica` i `cjtr-stranicenje` maknuti su zajedno s rucnom dopunom na
+   ekranu Artikli — bili su jedina mjesta koja su ih ispisivala. */
 .cjtr-tanka { margin: 16px 0; border: 0; border-top: 1px solid #f0f0f1; max-width: 900px; }
 .cjtr-podnozje-veze { margin: 26px 0 0; font-size: 12px; color: #8c8f94; }
-.cjtr-stranicenje { margin: 12px 0; font-size: 12px; color: #646970; }
-.cjtr-stranicenje a { margin-left: 10px; }
