@@ -223,20 +223,32 @@ final class Sidrena_Novi_Artikli extends Posao {
 		$cijena    = null;
 		$izvor     = Config::IZVOR_RUCNI_UNOS;
 		$snaga     = Config::SNAGA_NEMA;
+		$pouzdan   = 1;
 		$ref_datum = $ref_opci;
 		$biljeska  = __( 'artikl jos nije obuhvacen utvrdivanjem sidrene cijene', Config::TEXT_DOMAIN );
 
 		if ( Config::nastao_nakon_ref_datuma( $nastao, $ref_opci ) ) {
 			if ( $prvi && null !== $prvi->price ) {
+				// Isto pravilo kao u velikom poslu — obrazlozenje ondje.
+				$pouzdan_pocetak = ( (int) $prvi->ts > 0 );
+				$kad             = $pouzdan_pocetak ? (int) $prvi->ts : (int) strtotime( $nastao );
+
 				$cijena    = (float) $prvi->price;
 				$izvor     = Config::IZVOR_PRVA_CIJENA;
 				$snaga     = Config::SNAGA_OPAZENO;
-				$ref_datum = wp_date( 'Y-m-d', (int) $prvi->ts );
-				$biljeska  = sprintf(
-					/* translators: %s = datum uvodenja */
-					__( 'prva cijena po kojoj je artikl ponuden, formirana %s', Config::TEXT_DOMAIN ),
-					wp_date( 'd.m.Y.', (int) $prvi->ts )
-				);
+				$pouzdan   = $pouzdan_pocetak ? 1 : 0;
+				$ref_datum = wp_date( 'Y-m-d', $kad );
+				$biljeska  = $pouzdan_pocetak
+					? sprintf(
+						/* translators: %s = datum uvodenja */
+						__( 'prva cijena po kojoj je artikl ponuden, formirana %s', Config::TEXT_DOMAIN ),
+						wp_date( 'd.m.Y.', $kad )
+					)
+					: sprintf(
+						/* translators: %s = datum uvodenja */
+						__( 'prva i jedina zabiljezena cijena artikla uvedenog %s; vrijednost je izmjerena, pocetak nije neovisno datiran', Config::TEXT_DOMAIN ),
+						wp_date( 'd.m.Y.', $kad )
+					);
 			} else {
 				$izvor     = Config::IZVOR_NAKON_REF_DATUMA;
 				$ref_datum = wp_date( 'Y-m-d', (int) strtotime( $nastao ) );
@@ -256,7 +268,7 @@ final class Sidrena_Novi_Artikli extends Posao {
 		 */
 		$wpdb->query(
 			"INSERT IGNORE INTO `{$tablica}`
-				( entity_id, sidrena_cijena, sidrena_izvor, opazeno_na_datum, dokazna_snaga,
+				( entity_id, sidrena_cijena, sidrena_izvor, opazeno_na_datum, dokazna_snaga, pocetak_pouzdan,
 				  referentni_datum, sidrena_postavio, sidrena_postavljeno, sidrena_biljeska, azurirano )
 			 VALUES ( " . implode(
 				',',
@@ -266,6 +278,7 @@ final class Sidrena_Novi_Artikli extends Posao {
 					Db::tekst( $izvor ),
 					Db::tekst( $ref_datum ),
 					Db::tekst( $snaga ),
+					(int) $pouzdan,
 					Db::tekst( $ref_datum ),
 					Db::tekst( Config::POSTAVIO_POSAO ),
 					Db::tekst( $sada ),

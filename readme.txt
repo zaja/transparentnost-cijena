@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.3.3
+Stable tag: 1.3.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,16 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.3.4 =
+* Artikl uveden nakon referentnog datuma vise ne trazi unos kad mu je cijena
+  zabiljezena, ali bez pouzdanog pocetka. Takav je zapis nastao u dnevnoj
+  provjeri: vrijednost zna, trenutak ne. Ranije je artikl zbog toga zavrsavao u
+  nalazu i cekao da trgovac prepise brojku koju mu sami prikazujemo.
+* Datum uz takvu sidrenu cijenu je datum uvodenja artikla iz WordPressa — znamo
+  ga na sekundu, tocniji je od trenutka nase biljeske. Da pocetak nije neovisno
+  datiran biljezi se uz zapis, kao i dosad kod svake takve vrijednosti.
+* Unos se trazi jos samo kad o cijeni artikla nema NIJEDNOG zapisa.
 
 = 1.3.3 =
 * Nalaz vise ne nudi gumb za postupak koji se u tom trenutku ne moze pokrenuti.

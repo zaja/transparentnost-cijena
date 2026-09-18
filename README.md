@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.3.4** — artikl uveden nakon referentnog datuma ne traži unos kad mu je cijena zabilježena; unos se traži još samo kad zapisa uopće nema.
+
 **1.3.3** — nalaz ne nudi gumb za postupak koji se ne može pokrenuti; umjesto njega piše što je prije toga potrebno.
 
 **1.3.2** — novi artikl dobiva sidrenu cijenu odmah po objavi, ne tek pri dnevnom prolazu.

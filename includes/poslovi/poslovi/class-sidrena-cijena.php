@@ -202,15 +202,33 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 			$prvi = Zapis::prvi( $id );
 
 			if ( $prvi && null !== $prvi->price ) {
-				$zapis['sidrena_cijena'] = (float) $prvi->price;
-				$zapis['izvor']          = Config::IZVOR_PRVA_CIJENA;
-				$zapis['snaga']          = Config::SNAGA_OPAZENO;
-				$zapis['ref_datum']      = wp_date( 'Y-m-d', (int) $prvi->ts );
-				$zapis['biljeska']       = sprintf(
-					/* translators: %s = datum uvodenja */
-					__( 'prva cijena po kojoj je artikl ponuden, formirana %s', Config::TEXT_DOMAIN ),
-					wp_date( 'd.m.Y.', (int) $prvi->ts )
-				);
+				/*
+				 * Datum je artiklov datum uvodenja, ne trenutak nase biljeske.
+				 *
+				 * Kad zapis ima pouzdan pocetak, to je isto. Kad nema — zabiljezila ga
+				 * je dnevna provjera, koja zna vrijednost ali ne i otkad vrijedi — onda
+				 * je WordPressov datum nastanka tocniji od nase biljeske, jer ga znamo
+				 * na sekundu. Nepouzdanost se ne gubi: ide u `pocetak_pouzdan`.
+				 */
+				$pouzdan = ( (int) $prvi->ts > 0 );
+				$kad     = $pouzdan ? (int) $prvi->ts : (int) strtotime( (string) $e->post_date );
+
+				$zapis['sidrena_cijena']  = (float) $prvi->price;
+				$zapis['izvor']           = Config::IZVOR_PRVA_CIJENA;
+				$zapis['snaga']           = Config::SNAGA_OPAZENO;
+				$zapis['pocetak_pouzdan'] = $pouzdan ? 1 : 0;
+				$zapis['ref_datum']       = wp_date( 'Y-m-d', $kad );
+				$zapis['biljeska']        = $pouzdan
+					? sprintf(
+						/* translators: %s = datum uvodenja */
+						__( 'prva cijena po kojoj je artikl ponuden, formirana %s', Config::TEXT_DOMAIN ),
+						wp_date( 'd.m.Y.', $kad )
+					)
+					: sprintf(
+						/* translators: %s = datum uvodenja */
+						__( 'prva i jedina zabiljezena cijena artikla uvedenog %s; vrijednost je izmjerena, pocetak nije neovisno datiran', Config::TEXT_DOMAIN ),
+						wp_date( 'd.m.Y.', $kad )
+					);
 				return $zapis;
 			}
 

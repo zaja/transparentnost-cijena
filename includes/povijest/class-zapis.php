@@ -161,19 +161,52 @@ final class Zapis {
 	/**
 	 * PRVI zapis o cijeni jednog entiteta — cijena po kojoj je ponuden.
 	 *
-	 * Trazi se zapis s POUZDANIM pocetkom (`ts > 0`). Zapis bez njega zna vrijednost,
-	 * ali ne i otkad vrijedi, pa ne moze tvrditi "ovo je bila prva cijena".
+	 * DVA STUPNJA, I DRUGI NIJE UTJEHA NEGO PODATAK
+	 *
+	 * Najprije se trazi zapis s POUZDANIM pocetkom (`ts > 0`): njemu se zna i
+	 * vrijednost i trenutak, pa je i datum uz sidrenu cijenu izmjeren.
+	 *
+	 * Nema li takvog, uzima se NAJSTARIJI zapis po redoslijedu upisa. Vrijednost je
+	 * i dalje izmjerena — samo joj pocetak nije neovisno datiran. To se biljezi
+	 * kolonom `pocetak_pouzdan`, koja za to i postoji.
+	 *
+	 * ZASTO SE DRUGI STUPANJ UOPCE PRIHVACA
+	 *
+	 * Prva verzija je vracala null kad pouzdanog pocetka nema, pa je artikl zavrsavao
+	 * u nalazu "ne znamo po kojoj je cijeni uveden" i cekao rucni unos. Izmjereno na
+	 * trinaest takvih artikala: svaki ima TOCNO JEDAN zapis i TOCNO JEDNU cijenu —
+	 * otkad ih gledamo, nijedan se nije promijenio.
+	 *
+	 * Traziti od trgovca da prepise brojku koju mu sami prikazujemo nije opreznost
+	 * nego posao koji smo mu izmislili. Isto nacelo kao kod najnize cijene u 30 dana:
+	 * ako je jedina zabiljezena ona koju imamo, onda je ona i odgovor.
 	 *
 	 * @return object|null
 	 */
 	public static function prvi( int $entity_id ) {
 		global $wpdb;
 
+		$t = self::tablica();
+
+		$pouzdan = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT * FROM `{$t}`
+				 WHERE entity_id = %d AND ts > 0 AND price IS NOT NULL
+				 ORDER BY ts ASC, id ASC LIMIT 1",
+				$entity_id
+			) // phpcs:ignore
+		);
+
+		if ( $pouzdan ) {
+			return $pouzdan;
+		}
+
+		// Redoslijed upisa je pouzdan i kad `ts` nije: `id` raste kako se pise.
 		return $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT * FROM `' . self::tablica() . '`
-				 WHERE entity_id = %d AND ts > 0 AND price IS NOT NULL
-				 ORDER BY ts ASC, id ASC LIMIT 1',
+				"SELECT * FROM `{$t}`
+				 WHERE entity_id = %d AND price IS NOT NULL
+				 ORDER BY id ASC LIMIT 1",
 				$entity_id
 			) // phpcs:ignore
 		);
@@ -217,6 +250,27 @@ final class Zapis {
 				$out[ $id ] = $r;
 			}
 		}
+
+		// Drugi stupanj za one bez pouzdanog pocetka — obrazlozenje uz `prvi()`.
+		$bez = array_diff( array_map( 'intval', $ids ), array_keys( $out ) );
+
+		if ( ! empty( $bez ) ) {
+			$u2 = implode( ',', $bez );
+
+			$ostali = $wpdb->get_results(
+				"SELECT z.* FROM `{$t}` z
+				 JOIN ( SELECT entity_id, MIN(id) AS prvi_id
+				          FROM `{$t}`
+				         WHERE entity_id IN ({$u2}) AND price IS NOT NULL
+				      GROUP BY entity_id ) m
+				   ON m.prvi_id = z.id" // phpcs:ignore
+			);
+
+			foreach ( (array) $ostali as $r ) {
+				$out[ (int) $r->entity_id ] = $r;
+			}
+		}
+
 		return $out;
 	}
 
