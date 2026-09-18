@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,15 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.3.1 =
+* Rucni unos sidrene cijene vise ne pomice datum na koji se ona odnosi. Kod
+  artikla uvedenog nakon referentnog datuma unos bi mu ujedno postavio opci datum,
+  pa bi brojka i natpis uz nju tvrdili razlicito — a upravo na taj unos poziva
+  nalaz uveden u 1.3.0.
+* Referentni datum se svugdje cita iz postavki. Na sedam mjesta je jos stajala
+  konstanta: dva posla koja po njemu racunaju, upis praznog retka, izvoz, naziv
+  datoteke, dijagnostika i natpis na ekranu Pregled.
 
 = 1.3.0 =
 * Artikl uveden nakon referentnog datuma vise nema praznu sidrenu cijenu. Sidrena

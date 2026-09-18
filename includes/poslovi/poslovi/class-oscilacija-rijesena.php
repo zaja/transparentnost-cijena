@@ -286,7 +286,7 @@ final class Oscilacija_Rijesena extends Posao_S_Cijenama {
 
 	private function t_ref(): int {
 		if ( null === $this->t_ref ) {
-			$this->t_ref = Config::t_ref( Config::REF_DATUM_OSTALO );
+			$this->t_ref = Config::t_ref( Postavke::ref_datum() );
 		}
 		return $this->t_ref;
 	}

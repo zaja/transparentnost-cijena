@@ -163,6 +163,18 @@ final class Sidrena_Unos {
 		$tablica = Config::table( Config::TABLE_PODACI );
 		$snaga   = ( Config::IZVOR_IZJAVA_TRGOVCA === $izvor ) ? Config::SNAGA_IZJAVA : Config::SNAGA_OPAZENO;
 
+		/*
+		 * `referentni_datum` se pri IZMJENI namjerno ne dira — nema ga u popisu ispod.
+		 *
+		 * Artikl uveden nakon opceg referentnog datuma nosi svoj datum: onaj kad mu je
+		 * cijena formirana. Trgovac koji upisuje bas tu pocetnu cijenu, po nalazu koji
+		 * ga na to i poziva, inace bi joj ujedno pomaknuo datum na opci — pa bi brojka
+		 * i natpis uz nju opet tvrdili razlicito.
+		 *
+		 * Datum retka postavlja klasifikacija, koja jedina zna kad je artikl usao.
+		 * Unos govori KOLIKO, ne KADA. Pri prvom upisu (INSERT) datum se postavlja, jer
+		 * tada retka jos nema.
+		 */
 		$wpdb->query(
 			$wpdb->prepare(
 				"INSERT INTO `{$tablica}`
@@ -173,7 +185,6 @@ final class Sidrena_Unos {
 				   sidrena_cijena      = VALUES(sidrena_cijena),
 				   sidrena_izvor       = VALUES(sidrena_izvor),
 				   dokazna_snaga       = VALUES(dokazna_snaga),
-				   referentni_datum    = VALUES(referentni_datum),
 				   sidrena_postavio    = VALUES(sidrena_postavio),
 				   sidrena_postavljeno = VALUES(sidrena_postavljeno),
 				   sidrena_biljeska    = VALUES(sidrena_biljeska),

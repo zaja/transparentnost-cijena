@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
 		printf(
 			/* translators: %s = referentni datum */
 			esc_html__( 'Stanje na dan kada se utvrduje sidrena cijena: %s. Ova stranica samo prikazuje stanje i ne mijenja nista.', Config::TEXT_DOMAIN ),
-			esc_html( wp_date( 'd.m.Y.', Config::t_ref( Config::REF_DATUM_OSTALO ) ) )
+			esc_html( wp_date( 'd.m.Y.', Config::t_ref( CJTR\Postavke::ref_datum() ) ) )
 		);
 		?>
 	</p>

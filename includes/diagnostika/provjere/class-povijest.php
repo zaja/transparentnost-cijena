@@ -115,7 +115,7 @@ final class Povijest extends Provjera {
 	private function pokrivenost( Rezultat $r, string $puno ): void {
 		global $wpdb;
 
-		$datum = Config::REF_DATUM_OSTALO;
+		$datum = \CJTR\Postavke::ref_datum();
 		$t     = Config::t_ref( $datum );
 
 		$r->stavka(

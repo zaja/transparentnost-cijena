@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.3.1** — ručni unos sidrene cijene više ne pomiče datum na koji se ona odnosi; referentni datum se svugdje čita iz postavki.
+
 **1.3.0** — artikl uveden nakon referentnog datuma dobiva sidrenu cijenu: onu po kojoj je prvi put ponuđen, uz vlastiti datum. Novi dnevni posao obuhvaća artikle koje utvrđivanje nije zahvatilo.
 
 **1.2.1** — najniža cijena u 30 dana izlazi i na varijabilnom proizvodu, uz isto pravilo kao sidrena: samo ako su sve varijante snižene i brojka im je ista.

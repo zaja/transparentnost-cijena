@@ -316,7 +316,7 @@ final class Zapis_Podataka {
 			$wpdb->prepare(
 				'INSERT INTO `' . self::tablica() . '` ( entity_id, referentni_datum, azurirano ) VALUES ( %d, %s, %s )',
 				$entity_id,
-				Config::REF_DATUM_OSTALO,
+				\CJTR\Postavke::ref_datum(),
 				current_time( 'mysql', true )
 			) // phpcs:ignore
 		);

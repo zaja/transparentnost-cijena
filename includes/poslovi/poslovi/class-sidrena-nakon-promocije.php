@@ -35,6 +35,7 @@ namespace CJTR\Poslovi\Poslovi;
 use CJTR\Cijene\Povijest_Cijena;
 use CJTR\Config;
 use CJTR\Db;
+use CJTR\Postavke;
 use CJTR\Poslovi\Posao;
 use CJTR\Poslovi\Rezultat_Komada;
 use CJTR\Poslovi\Stanje;
@@ -377,7 +378,7 @@ final class Sidrena_Nakon_Promocije extends Posao {
 
 	private function t_ref(): int {
 		if ( null === $this->t_ref ) {
-			$this->t_ref = Config::t_ref( Config::REF_DATUM_OSTALO );
+			$this->t_ref = Config::t_ref( Postavke::ref_datum() );
 		}
 		return $this->t_ref;
 	}

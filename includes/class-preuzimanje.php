@@ -100,7 +100,7 @@ final class Preuzimanje {
 		}
 
 		if ( isset( Config::RADNI_POPISI[ $izvor ] ) ) {
-			return Config::RADNI_POPISI[ $izvor ] . '-' . Config::REF_DATUM_OSTALO . '.csv';
+			return Config::RADNI_POPISI[ $izvor ] . '-' . \CJTR\Postavke::ref_datum() . '.csv';
 		}
 
 		return '';
@@ -209,7 +209,7 @@ final class Preuzimanje {
 				$r->sidrena_kandidat_efektivna,
 				'',
 				get_woocommerce_currency(),
-				Config::REF_DATUM_OSTALO,
+				\CJTR\Postavke::ref_datum(),
 				$r->bio_na_akciji,
 				$r->pocetak_pouzdan,
 				$r->sidrena_biljeska,

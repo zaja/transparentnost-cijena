@@ -50,7 +50,7 @@ final class Render {
 		if ( null !== $sidrena ) {
 			$redci[] = self::redak(
 				'sidrena',
-				self::oznaka_sidrene( $p['ref_datum'] ?? Config::REF_DATUM_OSTALO ),
+				self::oznaka_sidrene( $p['ref_datum'] ?? \CJTR\Postavke::ref_datum() ),
 				(float) $sidrena
 			);
 		}
