@@ -20,7 +20,7 @@ final class Config {
 	/** Prefiks za tablice, opcije, meta polja, hookove i CSS klase. */
 	const PREFIX = 'cjtr';
 
-	const VERSION     = '1.2.1';
+	const VERSION     = '1.3.0';
 	const TEXT_DOMAIN = 'cjenovna-transparentnost';
 
 	/** Verzija sheme. Podici pri svakoj promjeni tablica. */
@@ -137,17 +137,52 @@ final class Config {
 	 * ------------------------------------------------------------------ */
 
 	/**
-	 * Artikl je nastao NAKON referentnog datuma.
+	 * Sidrena cijena je PRVA cijena po kojoj je artikl ponuden.
 	 *
-	 * Za njega sidrena cijena ne postoji i ne moze postojati — na referentni datum
-	 * artikla jos nije bilo. To nije rubni slucaj nego trajno stanje: trgovac dodaje
-	 * artikle svakodnevno, pa ce ta skupina samo rasti.
+	 * Vrijedi za artikle uvedene NAKON referentnog datuma. Na taj datum artikla
+	 * jos nije bilo, pa cijene s njega nema — ali to ne znaci da sidrene cijene
+	 * nema.
+	 *
+	 * TUMACENJE NA KOJEM POCIVA, S PODRIJETLOM
+	 *
+	 * Ministarstvo gospodarstva, izneseno na radionicama HOK-a u rujnu 2026.:
+	 * sidrena cijena takvog artikla je cijena formirana kad je prvi put uvrsten u
+	 * ponudu, uz jasnu naznaku datuma kad je formirana. Sidrena i vazeca cijena su
+	 * na pocetku iste, a uz njih stoji datum uvodenja umjesto opceg referentnog.
+	 *
+	 * Materijal s radionice NIJE javno objavljen. Tumacenje se ovdje biljezi s tim
+	 * ogradama, ne kao citat propisa — ali se po njemu postupa, jer je izvor
+	 * mjerodavan i jer je alternativa gora (nize).
+	 *
+	 * ZASTO SE PO NJEMU POSTUPA I BEZ OBJAVLJENOG TEKSTA
+	 *
+	 * Ranije je ovdje stajalo suprotno pravilo: sidrena cijena "ne postoji i ne
+	 * moze postojati", polje ostaje prazno. Ono ima posljedicu koju nitko nije
+	 * trazio: artikl koji ERP ponovno uveze dobiva novi ID, i sidrena cijena mu
+	 * tiho nestane. Nitko to nije htio ni primijetio, a iz obvezne objave ispadne
+	 * brojka koju je kupac mogao provjeriti.
+	 *
+	 * Prazno polje je tvrdnja "ne znamo". Za artikl uveden jucer to nije istina —
+	 * cijenu po kojoj je uveden znamo, i zabiljezili smo je sami.
 	 *
 	 * Pravilo, na jednom mjestu jer ga cita i prikaz i cjenik i izvjestaj:
-	 *   - sidrena_cijena ostaje PRAZNA (NULL), nikad 0 — nula je tvrdnja o cijeni
-	 *   - u prikazu artikla ne pokazuje se nista, ni prazan prostor
-	 *   - u cjeniku polje POSTOJI i prazno je (izostavljeno polje znaci gresku)
-	 *   - NE ulazi u izvjestaj o nepotpunosti kao zadatak za rucni unos
+	 *   - sidrena_cijena = prva zabiljezena cijena tog artikla
+	 *   - referentni datum tog RETKA je datum uvodenja, ne opci
+	 *   - u prikazu uz cijenu stoji taj datum, ne opci
+	 *   - u cjeniku uz brojku ide i element s datumom, jer bi inace tvrdila
+	 *     nesto o opcem referentnom datumu, a to nije istina
+	 */
+	const IZVOR_PRVA_CIJENA = 'prva_cijena_u_ponudi';
+
+	/**
+	 * Artikl je uveden nakon referentnog datuma, a pocetnu cijenu ne znamo.
+	 *
+	 * Uzak, ali stvaran slucaj: artikl uveden izmedu referentnog datuma i
+	 * instalacije dodatka. Datum uvodenja znamo iz WordPressa, cijenu tog dana ne
+	 * — nismo je imali tko zabiljeziti.
+	 *
+	 * To NIJE "ne odnosi se" nego "ne znamo, a zna trgovac": on je tu cijenu
+	 * formirao. Zato ceka njegov unos i prijavljuje se kao nalaz, a ne presucuje.
 	 */
 	const IZVOR_NAKON_REF_DATUMA = 'nastao_nakon_referentnog_datuma';
 
@@ -894,6 +929,21 @@ final class Config {
 	 * Producent vraca `null` za prvo i `''` za drugo. U XML-u se prvo IZOSTAVLJA,
 	 * drugo izlazi kao prazan element. U CSV-u je i jedno i drugo prazna celija —
 	 * tablica ne moze imati redak s manje stupaca, i to je granica tog oblika.
+	 *
+	 * ZASTO JE `sidrena_datum` OVDJE IAKO GA POPIS IZ TOCKE III NE NAVODI
+	 *
+	 * Ranije je zapisano pravilo: nepropisano polje se ne dodaje, jer citatelj
+	 * propisane objave pretpostavlja da je svako polje ondje zato sto ga propis
+	 * trazi. To pravilo i dalje vrijedi — ovo nije iznimka od njega.
+	 *
+	 * `sidrena_cijena` je tvrdnja o CIJENI NA ODREDENI DATUM. Za gotovo sve artikle
+	 * taj je datum opci referentni i ne treba ga pisati. Za artikl uveden poslije
+	 * njega datum je drugi (vidi `IZVOR_PRVA_CIJENA`), pa brojka bez datuma tvrdi
+	 * nesto sto nije istina.
+	 *
+	 * Zato je polje UVJETNO: izostavljeno je svugdje gdje vrijedi opci datum, a
+	 * pojavljuje se samo ondje gdje bi brojka inace lagala. Ne dodaje nikakav novi
+	 * podatak — samo cuva tocnost onoga koji propis trazi.
 	 */
 	const SHEMA_CJENIKA = array(
 		'naziv'                 => array( 'element' => 'naziv' ),
@@ -905,6 +955,7 @@ final class Config {
 		'posebni_oblik'         => array( 'element' => 'posebni_oblik_prodaje' ),
 		'naziv_posebnog_oblika' => array( 'element' => 'naziv_posebnog_oblika_prodaje' ),
 		'sidrena_cijena'        => array( 'element' => 'sidrena_cijena' ),
+		'sidrena_datum'         => array( 'element' => 'sidrena_cijena_datum', 'uvjetno' => true ),
 		'barkod'                => array( 'element' => 'barkod' ),
 		'dostupnost'            => array( 'element' => 'dostupnost' ),
 	);
@@ -1123,6 +1174,7 @@ final class Config {
 		self::IZVOR_TRAZI_ODLUKU        => 'odluka-klijenta',
 		self::IZVOR_RUCNI_UNOS          => 'rucni-unos',
 		self::IZVOR_ARTEFAKT_OSCILACIJE => 'oscilacija-cijene',
+		self::IZVOR_NAKON_REF_DATUMA    => 'uvedeni-poslije-bez-pocetne-cijene',
 	);
 
 	/* ---------------------------------------------------------------------

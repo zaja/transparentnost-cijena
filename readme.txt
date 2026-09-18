@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.2.1
+Stable tag: 1.3.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -129,6 +129,23 @@ Dok evidencija ne pokrije punih 30 dana, ekran Stanje nosi ogradu: ako je artikl
 prije nase prve biljeske bio jeftiniji, toga u brojci nema. Imate li stariju
 povijest iz drugog dodatka, uvoz odmah popunjava prozor.
 
+= Uveo sam novi proizvod. Koja mu je sidrena cijena? =
+
+Cijena koju ste formirali kad ste ga prvi put uvrstili u ponudu, uz datum kad je
+formirana. Sidrena i vazeca cijena su mu na pocetku iste, a uz njih stoji datum
+uvodenja umjesto opceg referentnog datuma.
+
+Dodatak to radi sam: prvu cijenu novog artikla zabiljezi cim artikl nastane, a
+jednom dnevno prode kroz sve koje jos nije obuhvatio. Ne trazi od vas nista.
+
+U cjeniku uz takav artikl izlazi i element s datumom, jer bi brojka bez njega
+tvrdila nesto o opcem referentnom datumu — a to za njega ne vrijedi. Kod svih
+ostalih artikala tog elementa nema.
+
+Iznimka je uska: artikli uvedeni izmedu referentnog datuma i instalacije dodatka.
+Njima datum znamo, a pocetnu cijenu nismo imali tko zabiljeziti — ekran Stanje ih
+prijavi i cekaju vas unos.
+
 = Sidrena cijena mi se ne prikazuje =
 
 Ako tema cijenu ispisuje na svoj nacin, uobicajeni put je ne moze dopuniti.
@@ -139,6 +156,27 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.3.0 =
+* Artikl uveden nakon referentnog datuma vise nema praznu sidrenu cijenu. Sidrena
+  mu je cijena po kojoj je prvi put ponuden, a referentni datum tog artikla je dan
+  kad je formirana. Tako stoji u tumacenju Ministarstva gospodarstva iznesenom na
+  radionicama HOK-a u rujnu 2026.; materijal nije javno objavljen, pa je tumacenje
+  u kodu zabiljezeno s tom ogradom.
+* Ranije je takav artikl imao prazno polje. To je imalo posljedicu koju nitko nije
+  trazio: artikl koji ERP ponovno uveze dobiva novi ID i sidrena cijena mu tiho
+  nestane iz obvezne objave.
+* Uz cijenu takvog artikla stoji njegov datum, ne opci. U cjeniku uz brojku ide i
+  element s datumom — ali samo ondje gdje se datum razlikuje od opceg, jer bi ga
+  inace svaki redak ponavljao bez potrebe.
+* Novi dnevni posao "Sidrena cijena za novododane artikle" prolazi samo kroz
+  artikle koje utvrdivanje jos nije obuhvatilo. Ranije ih nije obuhvacalo nista:
+  veliki posao je korak pripreme i prode katalog jednom.
+* Referentni datum se sada i pri racunanju cita iz postavki, po skupini proizvoda.
+  Dotad je posao koristio konstantu, a prikaz postavku — brojka i natpis uz nju
+  mogli su tvrditi razlicito.
+* Novi nalaz za artikle uvedene izmedu referentnog datuma i instalacije dodatka:
+  datum im znamo, pocetnu cijenu ne, i ceka se unos trgovca.
 
 = 1.2.1 =
 * Najniza cijena u 30 dana sada izlazi i na varijabilnom proizvodu. Ranije na

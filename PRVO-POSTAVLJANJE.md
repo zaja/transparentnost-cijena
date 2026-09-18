@@ -203,6 +203,18 @@ Ondje su barkod, marka, neto količina, jedinica mjere, oblik prodaje i oznaka �
 | ono što trgovina već negdje ima | **„Pokupi što trgovina već ima"** — ekran Artikli |
 | jedan, ili ispravak | **kartica na proizvodu** |
 
+### Proizvod uveden nakon referentnog datuma
+
+Njemu cijene s referentnog datuma nema — tada ga još nije bilo. Sidrena cijena mu je **ona po kojoj je prvi put uvršten u ponudu**, uz datum kad je formirana.¹ Sidrena i važeća cijena su mu na početku iste, a uz njih stoji datum uvođenja umjesto općeg.
+
+Dodatak to radi sam. Prvu cijenu zabilježi čim artikl nastane, a jednom dnevno prođe kroz sve koje utvrđivanje još nije zahvatilo.
+
+> Uska iznimka: artikli uvedeni **između referentnog datuma i instalacije dodatka**. Njima datum znamo, a početnu cijenu nismo imali tko zabilježiti. Ekran **Stanje** ih prijavi i čekaju vaš unos — tu ste cijenu formirali vi i nitko je ne zna bolje.
+
+U cjeniku uz takav artikl izlazi i element s datumom. Kod ostalih ga nema, jer bi ponavljao opći datum u svakom retku.
+
+¹ Tumačenje Ministarstva gospodarstva izneseno na radionicama HOK-a, rujan 2026. Materijal nije javno objavljen.
+
 ### Barkod i marka: WooCommerce ima prednost
 
 WooCommerce od svoje verzije 9 ima **vlastita polja** za oboje: GTIN u kartici **Inventar**, marku u kutiji **Marke** uz proizvod.

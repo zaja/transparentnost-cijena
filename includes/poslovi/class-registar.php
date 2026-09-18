@@ -25,7 +25,7 @@ final class Registar {
 			return self::$poslovi;
 		}
 
-		$popis = apply_filters( Config::hook( 'poslovi' ), array( new Poslovi\Prebroji(), new Poslovi\Istekle_Akcije(), new Poslovi\Vrati_Akcije(), new Poslovi\Sidrena_Cijena(), new Poslovi\Oscilacija_Rijesena(), new Poslovi\Uvoz_Povijesti(), new Poslovi\Rekonsilijacija(), new Poslovi\Promocija(), new Poslovi\Sidrena_Nakon_Promocije(), new Poslovi\Vrati_Promociju(), new Poslovi\Vrati_Sidrenu_Nakon_Promocije(), new Poslovi\Prikupi_Podatke(), new Poslovi\Oznaci_Neprimjenjivo(), new Poslovi\Marka_Iz_Naziva(), new Poslovi\Kolicina_Kom(), new Poslovi\Generiraj_Cjenik(), new Poslovi\Zaokruzi_Cijene(), new Poslovi\Vrati_Zaokruzivanje(), new Poslovi\Izjava_Trgovca() ) );
+		$popis = apply_filters( Config::hook( 'poslovi' ), array( new Poslovi\Prebroji(), new Poslovi\Istekle_Akcije(), new Poslovi\Vrati_Akcije(), new Poslovi\Sidrena_Cijena(), new Poslovi\Sidrena_Novi_Artikli(), new Poslovi\Oscilacija_Rijesena(), new Poslovi\Uvoz_Povijesti(), new Poslovi\Rekonsilijacija(), new Poslovi\Promocija(), new Poslovi\Sidrena_Nakon_Promocije(), new Poslovi\Vrati_Promociju(), new Poslovi\Vrati_Sidrenu_Nakon_Promocije(), new Poslovi\Prikupi_Podatke(), new Poslovi\Oznaci_Neprimjenjivo(), new Poslovi\Marka_Iz_Naziva(), new Poslovi\Kolicina_Kom(), new Poslovi\Generiraj_Cjenik(), new Poslovi\Zaokruzi_Cijene(), new Poslovi\Vrati_Zaokruzivanje(), new Poslovi\Izjava_Trgovca() ) );
 
 		self::$poslovi = array();
 		foreach ( $popis as $posao ) {

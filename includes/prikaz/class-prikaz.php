@@ -147,7 +147,7 @@ final class Prikaz {
 		return array(
 			'sidrena'    => $sidrena,
 			'najniza_30' => $najniza,
-			'ref_datum'  => Postavke::ref_datum( self::kategorija( $id ) ),
+			'ref_datum'  => self::ref_datum( $id ),
 		);
 	}
 
@@ -204,10 +204,27 @@ final class Prikaz {
 			return null;
 		}
 
+		/*
+		 * Datum roditelja mora biti isti kao brojka koju opisuje: ako se varijante
+		 * u datumu razilaze (jedna uvedena poslije referentnog datuma), roditelj
+		 * nema jedan datum i sidrena se ne prikazuje.
+		 */
+		$datumi = array();
+		foreach ( $djeca as $d ) {
+			$datumi[ self::ref_datum( (int) $d ) ] = true;
+		}
+
+		if ( null !== $sidrena && 1 !== count( $datumi ) ) {
+			$sidrena = null;
+			if ( null === $najniza ) {
+				return null;
+			}
+		}
+
 		return array(
 			'sidrena'    => $sidrena,
 			'najniza_30' => $najniza,
-			'ref_datum'  => Postavke::ref_datum(),
+			'ref_datum'  => ( 1 === count( $datumi ) ) ? (string) key( $datumi ) : Postavke::ref_datum(),
 		);
 	}
 
@@ -263,23 +280,42 @@ final class Prikaz {
 	}
 
 	/**
-	 * Zakonska kategorija artikla, radi ispravnog referentnog datuma.
+	 * Datum na koji se sidrena cijena ovog artikla odnosi.
 	 *
-	 * Trgovina koja prodaje i hranu i sve ostalo ima DVA referentna datuma, pa uz
-	 * cijenu mora stajati onaj koji vrijedi za taj artikl. Pogresan datum nije
-	 * kozmeticka greska nego netocna tvrdnja na stranici proizvoda.
+	 * TRI RAZINE, OD NAJTOCNIJE PREMA NAJOPCENITIJOJ
+	 *
+	 * 1. Datum upisan uz sam artikl. Za artikl uveden nakon referentnog datuma to
+	 *    je datum kad je cijena formirana, i on se razlikuje od opceg.
+	 * 2. Opci datum za njegovu zakonsku skupinu. Trgovina koja prodaje i hranu i
+	 *    sve ostalo ima DVA, pa uz cijenu mora stajati onaj koji vrijedi za taj
+	 *    artikl.
+	 * 3. Opci datum trgovine, kad o artiklu jos nista ne znamo.
+	 *
+	 * Pogresan datum nije kozmeticka greska nego netocna tvrdnja na stranici
+	 * proizvoda: brojka i datum zajedno cine jednu recenicu.
 	 */
-	private static function kategorija( int $id ): string {
+	private static function ref_datum( int $id ): string {
 		global $wpdb;
 
-		$v = $wpdb->get_var(
+		$r = $wpdb->get_row(
 			$wpdb->prepare(
-				'SELECT zakonska_kategorija FROM `' . Config::table( Config::TABLE_PODACI ) . '` WHERE entity_id = %d',
+				'SELECT zakonska_kategorija, referentni_datum
+				 FROM `' . Config::table( Config::TABLE_PODACI ) . '` WHERE entity_id = %d',
 				$id
 			) // phpcs:ignore
 		);
 
-		return ( null === $v ) ? '' : (string) $v;
+		if ( ! $r ) {
+			return Postavke::ref_datum();
+		}
+
+		$vlastiti = (string) $r->referentni_datum;
+
+		if ( '' !== $vlastiti && '0000-00-00' !== $vlastiti ) {
+			return $vlastiti;
+		}
+
+		return Postavke::ref_datum( (string) $r->zakonska_kategorija );
 	}
 
 	/**

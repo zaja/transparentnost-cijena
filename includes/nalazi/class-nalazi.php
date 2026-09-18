@@ -123,6 +123,7 @@ final class Nalazi {
 			'cjenik_nedostupan',
 			'obrada_je_zapela',
 			'dodatna_bez_izvora',
+			'pocetna_cijena_nepoznata',
 			'dodatna_ceka_odluku',
 			'objavljen_bez_cijene',
 			'previse_decimala',
@@ -338,6 +339,38 @@ final class Nalazi {
 			->postupak( __( 'Cijenu mozete uvesti iz tablice koju vam izvozi vas program, upisati je rucno po artiklu, ili potvrditi da su danasnje cijene vrijedile i na taj datum.', Config::TEXT_DOMAIN ) )
 			->ekran( Admin::url( Admin::STRANICA_ARTIKLI ), __( 'Uvezi ili upisi', Config::TEXT_DOMAIN ) )
 			->popis( Preuzimanje::url( Config::IZVOR_RUCNI_UNOS ), __( 'Preuzmi popis (CSV)', Config::TEXT_DOMAIN ) );
+	}
+
+	/**
+	 * 7b. Artikl uveden nakon referentnog datuma, a pocetnu cijenu ne znamo.
+	 *
+	 * Odvojen od nalaza 7 jer je i lijek drugi. Ondje se cijena trazi u proslosti i
+	 * moze se uvesti iz ERP-a. Ovdje je trgovac sam formirao i datum i cijenu — zna
+	 * ih, samo ih mi nismo imali tko zabiljeziti.
+	 *
+	 * Skupina je uska: artikli uvedeni izmedu referentnog datuma i instalacije
+	 * dodatka. Za sve uvedene poslije toga prva cijena se biljezi sama.
+	 */
+	private static function pocetna_cijena_nepoznata(): ?Nalaz {
+		$n = (int) ( Pregled::stanje()['ceka_pocetnu'] ?? 0 );
+
+		if ( $n < 1 ) {
+			return null;
+		}
+
+		return ( new Nalaz( 'pocetna_cijena_nepoznata' ) )
+			->vaznost( Nalaz::VAZNO )
+			->naslov(
+				sprintf(
+					/* translators: %s = broj artikala */
+					__( 'Ne znamo po kojoj su cijeni uvedeni — artikala i varijanti: %s', Config::TEXT_DOMAIN ),
+					number_format_i18n( $n )
+				)
+			)
+			->objasnjenje( __( 'Ti su artikli u ponudu usli nakon referentnog datuma, pa im je sidrena cijena ona po kojoj su prvi put ponudeni. Usli su i prije nego sto je ovaj dodatak poceo biljeziti cijene, pa tu prvu cijenu nemamo — datum znamo, iznos ne. U cjeniku im sidrena cijena ostaje prazna.', Config::TEXT_DOMAIN ) )
+			->postupak( __( 'Tu cijenu ste formirali vi i nitko je ne zna bolje: upisite je po artiklu, zajedno s datumom kad je artikl uveden. Artikli uvedeni od sada nadalje ne traze nista — prva cijena im se zabiljezi sama.', Config::TEXT_DOMAIN ) )
+			->ekran( Admin::url( Admin::STRANICA_PREGLED ), __( 'Pogledaj i upisi', Config::TEXT_DOMAIN ) )
+			->popis( Preuzimanje::url( Config::IZVOR_NAKON_REF_DATUMA ), __( 'Preuzmi popis (CSV)', Config::TEXT_DOMAIN ) );
 	}
 
 	/**

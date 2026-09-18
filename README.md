@@ -8,7 +8,7 @@ WooCommerce dodatak za usklađenje s hrvatskim propisima o objavi cjenika i isti
 
 ## Što radi
 
-- **Ističe sidrenu cijenu** uz cijenu proizvoda — koliko je artikl stajao na referentni datum.
+- **Ističe sidrenu cijenu** uz cijenu proizvoda — koliko je artikl stajao na referentni datum. Artikl uveden poslije tog datuma nosi cijenu po kojoj je prvi put ponuđen, uz svoj datum.
 - **Objavljuje cjenik** na javnoj adresi, svaki dan, u XML-u i CSV-u. Arhiva 30 dana, stabilna poveznica, REST.
 - **Prima podatke iz ERP-a**: odabir datoteke → povezivanje stupaca → probni prolaz → upis.
 - **Opcionalno prikazuje najnižu cijenu u 30 dana** — najmanju koju ima zabilježenu u tom prozoru.
@@ -77,6 +77,8 @@ Za dnevnu objavu treba jedan cron redak u cPanelu — dodatak ga ispiše gotovog
 Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
+
+**1.3.0** — artikl uveden nakon referentnog datuma dobiva sidrenu cijenu: onu po kojoj je prvi put ponuđen, uz vlastiti datum. Novi dnevni posao obuhvaća artikle koje utvrđivanje nije zahvatilo.
 
 **1.2.1** — najniža cijena u 30 dana izlazi i na varijabilnom proizvodu, uz isto pravilo kao sidrena: samo ako su sve varijante snižene i brojka im je ista.
 

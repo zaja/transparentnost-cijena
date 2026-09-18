@@ -20,6 +20,8 @@ use CJTR\Db;
 use CJTR\Cijene\Pregled;
 use CJTR\Preuzimanje;
 use CJTR\Katalog;
+use CJTR\Postavke;
+use CJTR\Povijest\Zapis;
 use CJTR\Poslovi\Posao_S_Cijenama;
 use CJTR\Poslovi\Rezultat_Komada;
 
@@ -29,6 +31,9 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 
 	/** @var int|null memoizirani referentni trenutak */
 	private $t_ref = null;
+
+	/** @var array<int,string> zakonska skupina po entitetu, za tekuci komad */
+	private $kategorije = array();
 
 	public function kljuc(): string {
 		return 'sidrena_cijena';
@@ -86,10 +91,26 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 			$ids[] = (int) $e->ID;
 		}
 
-		$rez       = Rezultat_Komada::s( 0, max( $ids ) );
-		$t         = $this->t_ref();
-		$intervali = Povijest_Cijena::na_trenutak( $ids, $t );
-		$mete      = $this->mete( $ids );
+		$rez = Rezultat_Komada::s( 0, max( $ids ) );
+
+		/*
+		 * REFERENTNI DATUM NIJE JEDAN ZA CIJELU TRGOVINU.
+		 *
+		 * Trgovina koja prodaje i hranu i ostalo ima dva, pa se komad grupira po
+		 * datumu i povijest se cita jednom po skupini. Ranije je ovdje stajala
+		 * konstanta, dok je prikaz uz cijenu vec citao postavku po skupini
+		 * proizvoda — brojka i natpis uz nju mogli su tvrditi razlicito.
+		 */
+		$this->ucitaj_kategorije( $ids );
+
+		$intervali = array();
+		$t_po_datumu = array();
+		foreach ( $this->po_ref_datumu( $ids ) as $datum => $skupina ) {
+			$t_po_datumu[ $datum ] = Config::t_ref( $datum );
+			$intervali            += Povijest_Cijena::na_trenutak( $skupina, $t_po_datumu[ $datum ] );
+		}
+
+		$mete = $this->mete( $ids );
 
 		// Za akcijske entitete trazimo potvrdu da je redovna cijena stvarno
 		// postojala prije akcije — inace je "redovna" samo trenutna vrijednost mete.
@@ -103,7 +124,12 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 				$trazene[ $id ] = (float) $mete[ $id ]['regular'];
 			}
 		}
-		$potvrde   = Povijest_Cijena::potvrda_ranije( $ids, $trazene, $t );
+		$potvrde = array();
+		foreach ( $this->po_ref_datumu( $ids ) as $datum => $skupina ) {
+			$njihove  = array_intersect_key( $trazene, array_flip( $skupina ) );
+			$potvrde += Povijest_Cijena::potvrda_ranije( $skupina, $njihove, $t_po_datumu[ $datum ] );
+		}
+
 		$postavio  = $this->tko_je_postavio( $ids );
 		$artefakti = $this->artefakti_oscilacije( $ids );
 		$izvori    = $this->zateceni_izvori( $ids );
@@ -145,6 +171,8 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 			return null;
 		}
 
+		$ref_datum = $this->ref_datum_za( $id );
+
 		$zapis = array(
 			'entity_id'        => $id,
 			'sidrena_cijena'   => null,
@@ -155,17 +183,48 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 			'izvor'            => Config::IZVOR_RUCNI_UNOS,
 			'snaga'            => Config::SNAGA_NEMA,
 			'pocetak_pouzdan'  => 1,
+			'ref_datum'        => $ref_datum,
 			'biljeska'         => '',
 		);
 
-		// 1. Artikl nastao NAKON referentnog datuma — sidrena cijena ne postoji
-		//    i ne moze postojati. Prazno je tocan ishod, ne manjak podatka.
-		if ( Config::nastao_nakon_ref_datuma( (string) $e->post_date, Config::REF_DATUM_OSTALO ) ) {
-			$zapis['izvor']    = Config::IZVOR_NAKON_REF_DATUMA;
-			$zapis['snaga']    = Config::SNAGA_NEPRIMJENJIVO;
-			$zapis['biljeska'] = sprintf(
-				/* translators: %s = datum nastanka */
-				__( 'artikl je nastao %s, nakon referentnog datuma', Config::TEXT_DOMAIN ),
+		/*
+		 * 1. Artikl uveden NAKON referentnog datuma.
+		 *
+		 * Cijene s referentnog datuma nema jer artikla tada nije bilo — ali sidrena
+		 * cijena postoji: to je cijena po kojoj je prvi put uvrsten u ponudu, uz
+		 * datum kad je formirana. Obrazlozenje i podrijetlo tumacenja stoje uz
+		 * `Config::IZVOR_PRVA_CIJENA`.
+		 *
+		 * Referentni datum tog RETKA postaje datum uvodenja. Zato ga upisujemo, a
+		 * prikaz i cjenik ga citaju odande umjesto opceg.
+		 */
+		if ( Config::nastao_nakon_ref_datuma( (string) $e->post_date, $ref_datum ) ) {
+			$prvi = Zapis::prvi( $id );
+
+			if ( $prvi && null !== $prvi->price ) {
+				$zapis['sidrena_cijena'] = (float) $prvi->price;
+				$zapis['izvor']          = Config::IZVOR_PRVA_CIJENA;
+				$zapis['snaga']          = Config::SNAGA_OPAZENO;
+				$zapis['ref_datum']      = wp_date( 'Y-m-d', (int) $prvi->ts );
+				$zapis['biljeska']       = sprintf(
+					/* translators: %s = datum uvodenja */
+					__( 'prva cijena po kojoj je artikl ponuden, formirana %s', Config::TEXT_DOMAIN ),
+					wp_date( 'd.m.Y.', (int) $prvi->ts )
+				);
+				return $zapis;
+			}
+
+			/*
+			 * Uveden nakon referentnog datuma, a pocetnu cijenu nemamo zabiljezenu —
+			 * artikl je usao izmedu referentnog datuma i instalacije dodatka. Datum
+			 * znamo, cijenu ne. To ceka trgovcev unos, jer ju je on formirao.
+			 */
+			$zapis['izvor']     = Config::IZVOR_NAKON_REF_DATUMA;
+			$zapis['snaga']     = Config::SNAGA_NEMA;
+			$zapis['ref_datum'] = wp_date( 'Y-m-d', (int) strtotime( (string) $e->post_date ) );
+			$zapis['biljeska']  = sprintf(
+				/* translators: %s = datum uvodenja */
+				__( 'uveden %s, nakon referentnog datuma; pocetnu cijenu nismo zabiljezili', Config::TEXT_DOMAIN ),
 				wp_date( 'd.m.Y.', strtotime( (string) $e->post_date ) )
 			);
 			return $zapis;
@@ -349,11 +408,11 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 				Db::cijena( $z['kandidat_efekt'] ),
 				(int) $z['zahtijeva_odluku'],
 				Db::tekst( $z['izvor'] ),
-				Db::tekst( Config::REF_DATUM_OSTALO ),
+				Db::tekst( $z['ref_datum'] ),
 				Db::tekst( $z['snaga'] ),
 				(int) $z['pocetak_pouzdan'],
 				(int) $z['bio_na_akciji'],
-				Db::tekst( Config::REF_DATUM_OSTALO ),
+				Db::tekst( $z['ref_datum'] ),
 				Db::tekst( Config::POSTAVIO_POSAO ),
 				Db::tekst( $sada ),
 				Db::tekst( $z['biljeska'] ),
@@ -427,11 +486,62 @@ final class Sidrena_Cijena extends Posao_S_Cijenama {
 
 	/* --------------------------------------------------------------- pomocno */
 
+	/** Opci referentni datum trgovine — za opis posla i za artikle bez skupine. */
 	private function t_ref(): int {
 		if ( null === $this->t_ref ) {
-			$this->t_ref = Config::t_ref( Config::REF_DATUM_OSTALO );
+			$this->t_ref = Config::t_ref( Postavke::ref_datum() );
 		}
 		return $this->t_ref;
+	}
+
+	/**
+	 * Zakonske skupine za komad entiteta.
+	 *
+	 * Ucitava se jednom po komadu; bez toga bi `ref_datum_za()` isao u bazu po
+	 * svakom artiklu.
+	 *
+	 * @param int[] $ids
+	 */
+	private function ucitaj_kategorije( array $ids ): void {
+		global $wpdb;
+
+		$this->kategorije = array();
+
+		if ( empty( $ids ) ) {
+			return;
+		}
+
+		$u = implode( ',', array_map( 'intval', $ids ) );
+
+		foreach ( (array) $wpdb->get_results(
+			'SELECT entity_id, zakonska_kategorija FROM `' . Config::table( Config::TABLE_PODACI ) . "`
+			 WHERE entity_id IN ({$u})" // phpcs:ignore
+		) as $r ) {
+			$this->kategorije[ (int) $r->entity_id ] = (string) $r->zakonska_kategorija;
+		}
+	}
+
+	/** Referentni datum koji vrijedi za ovaj artikl, po njegovoj skupini. */
+	private function ref_datum_za( int $id ): string {
+		return Postavke::ref_datum( $this->kategorije[ $id ] ?? '' );
+	}
+
+	/**
+	 * Entiteti komada grupirani po referentnom datumu.
+	 *
+	 * Trgovina bez reguliranih skupina dobiva jednu skupinu i sve radi kao prije.
+	 *
+	 * @param int[] $ids
+	 * @return array<string,int[]>
+	 */
+	private function po_ref_datumu( array $ids ): array {
+		$skupine = array();
+
+		foreach ( $ids as $id ) {
+			$skupine[ $this->ref_datum_za( (int) $id ) ][] = (int) $id;
+		}
+
+		return $skupine;
 	}
 
 	/**

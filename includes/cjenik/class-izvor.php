@@ -69,6 +69,7 @@ final class Izvor {
 			c.marka, c.barkod, c.barkod_status,
 			c.neto_kolicina, c.jedinica_mjere,
 			c.zakonska_kategorija, c.sidrena_cijena,
+			c.referentni_datum, c.sidrena_izvor,
 			COALESCE( l.stock_status, ms.meta_value, 'instock' ) AS stock_status,
 			h.vrsta_pop";
 	}

@@ -36,6 +36,7 @@ use CJTR\Podaci\Cijena_Po_Jedinici;
 use CJTR\Podaci\Gtin;
 use CJTR\Podaci\Kolicina;
 use CJTR\Podaci\Woo_Polja;
+use CJTR\Postavke;
 use CJTR\Povijest\Vrsta_Prodaje;
 
 defined( 'ABSPATH' ) || exit;
@@ -271,6 +272,31 @@ final class Redak {
 
 	private static function polje_sidrena_cijena( $r ): string {
 		return self::novac( self::s_porezom( $r, $r->sidrena_cijena ) );
+	}
+
+	/**
+	 * Datum na koji se sidrena cijena odnosi — samo kad NIJE opci.
+	 *
+	 * Za gotovo sve artikle je to opci referentni datum i pisati ga uz svaki redak
+	 * znacilo bi ponavljati isto 3.600 puta. Za artikl uveden poslije tog datuma
+	 * sidrena cijena je prva cijena po kojoj je ponuden (vidi `IZVOR_PRVA_CIJENA`),
+	 * pa brojka bez datuma tvrdi nesto sto nije istina.
+	 *
+	 * `null` = ne odnosi se (vrijedi opci datum, elementa nema).
+	 *
+	 * @return string|null
+	 */
+	private static function polje_sidrena_datum( $r ): ?string {
+		$datum = (string) ( $r->referentni_datum ?? '' );
+
+		if ( '' === $datum || '0000-00-00' === $datum ) {
+			return null;
+		}
+
+		// Kategorija artikla odlucuje koji je opci datum — trgovina moze imati dva.
+		$opci = Postavke::ref_datum( (string) ( $r->zakonska_kategorija ?? '' ) );
+
+		return ( $datum === $opci ) ? null : $datum;
 	}
 
 	/**

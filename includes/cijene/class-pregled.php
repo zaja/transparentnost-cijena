@@ -27,7 +27,7 @@ final class Pregled {
 	 *
 	 * @return array{
 	 *   izvori:array, ukupno_upisano:int, ukupno_katalog:int, zbroj_se_slaze:bool,
-	 *   bez_pocetka:int, ceka_odluku:int, ceka_unos:int, nule:array, zadnje:string
+	 *   bez_pocetka:int, ceka_odluku:int, ceka_unos:int, ceka_pocetnu:int, nule:array, zadnje:string
 	 * }
 	 */
 	public static function stanje(): array {
@@ -83,6 +83,9 @@ final class Pregled {
 			'bez_pocetka'    => $bez_pocetka,
 			'ceka_odluku'    => self::broj_izvora( $poredani, array( Config::IZVOR_TRAZI_ODLUKU, Config::IZVOR_ARTEFAKT_OSCILACIJE ) ),
 			'ceka_unos'      => self::broj_izvora( $poredani, array( Config::IZVOR_RUCNI_UNOS ) ),
+			// Vlastita brojka, jer je i lijek drugi: ovdje trgovac zna i datum i
+			// cijenu koju je formirao, pa se ne trazi u povijesti nego se upisuje.
+			'ceka_pocetnu'   => self::broj_izvora( $poredani, array( Config::IZVOR_NAKON_REF_DATUMA ) ),
 			'nule'           => Db::provjeri_nule(),
 			'zadnje'         => self::zadnje_pokretanje(),
 		);

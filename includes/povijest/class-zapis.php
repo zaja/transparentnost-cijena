@@ -159,6 +159,68 @@ final class Zapis {
 	}
 
 	/**
+	 * PRVI zapis o cijeni jednog entiteta — cijena po kojoj je ponuden.
+	 *
+	 * Trazi se zapis s POUZDANIM pocetkom (`ts > 0`). Zapis bez njega zna vrijednost,
+	 * ali ne i otkad vrijedi, pa ne moze tvrditi "ovo je bila prva cijena".
+	 *
+	 * @return object|null
+	 */
+	public static function prvi( int $entity_id ) {
+		global $wpdb;
+
+		return $wpdb->get_row(
+			$wpdb->prepare(
+				'SELECT * FROM `' . self::tablica() . '`
+				 WHERE entity_id = %d AND ts > 0 AND price IS NOT NULL
+				 ORDER BY ts ASC, id ASC LIMIT 1',
+				$entity_id
+			) // phpcs:ignore
+		);
+	}
+
+	/**
+	 * Prvi zapisi za vise entiteta odjednom.
+	 *
+	 * @param int[] $ids
+	 * @return array<int,object>
+	 */
+	public static function prvi_za( array $ids ): array {
+		global $wpdb;
+
+		if ( empty( $ids ) ) {
+			return array();
+		}
+
+		$u = implode( ',', array_map( 'intval', $ids ) );
+		$t = self::tablica();
+
+		/*
+		 * Prvo najstariji `ts` po entitetu, pa tek onda redak koji mu odgovara.
+		 * Bez unutarnjeg upita `MIN(ts)` i `price` ne moraju doci iz istog retka.
+		 */
+		$redci = $wpdb->get_results(
+			"SELECT z.* FROM `{$t}` z
+			 JOIN ( SELECT entity_id, MIN(ts) AS prvi_ts
+			          FROM `{$t}`
+			         WHERE entity_id IN ({$u}) AND ts > 0 AND price IS NOT NULL
+			      GROUP BY entity_id ) m
+			   ON m.entity_id = z.entity_id AND m.prvi_ts = z.ts
+			 WHERE z.price IS NOT NULL
+			 ORDER BY z.id ASC" // phpcs:ignore
+		);
+
+		$out = array();
+		foreach ( (array) $redci as $r ) {
+			$id = (int) $r->entity_id;
+			if ( ! isset( $out[ $id ] ) ) {
+				$out[ $id ] = $r;
+			}
+		}
+		return $out;
+	}
+
+	/**
 	 * Najnize cijene za vise entiteta odjednom.
 	 *
 	 * Postoji zbog varijabilnog roditelja: njegovih dvadeset varijanti ne smije
