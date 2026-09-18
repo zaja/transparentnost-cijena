@@ -486,6 +486,14 @@ final class Nalazi {
 			)
 			->postupak( __( 'Cijene treba svesti na dvije decimale. Dodatak to ne radi sam jer bi time mijenjao cijenu koju kupac placa — a to je vasa odluka, ne njegova.', Config::TEXT_DOMAIN ) )
 			->rjesava( 'zaokruzi_cijene', __( 'Svedi na dvije decimale', Config::TEXT_DOMAIN ) )
+			/*
+			 * Poveznica na probni prolaz stoji UVIJEK, ne samo kad potvrde nema.
+			 *
+			 * Posao mijenja cijene koje kupac placa, pa prije njega ide pogled na to
+			 * sto bi se tocno promijenilo. Dok potvrda nije dana, gumba nema i ovo je
+			 * jedini put dalje; kad je dana, ovo je put da se predomislite.
+			 */
+			->ekran( Admin::url( Admin::STRANICA_PREGLED ), __( 'Pogledaj sto bi se promijenilo', Config::TEXT_DOMAIN ) )
 			->popis( Preuzimanje::url( Preuzimanje::POPIS_ZAOKRUZIVANJE ), __( 'Preuzmi popis (CSV)', Config::TEXT_DOMAIN ) );
 	}
 
@@ -711,9 +719,14 @@ final class Nalazi {
 			->postupak( __( 'Ako je akcijska cijena postala vasa redovna cijena, tako je i vodite: cijena koju kupac placa ostaje ista, nestaje samo precrtana brojka iznad nje.', Config::TEXT_DOMAIN ) )
 			->popis( Preuzimanje::url( Preuzimanje::POPIS_DUGE_AKCIJE ), __( 'Preuzmi popis (CSV)', Config::TEXT_DOMAIN ) );
 
-		// Gumb samo ako postoji posao koji to izvodi. Sam nalaz vrijedi i bez njega.
+		/*
+		 * Gumb samo ako postoji posao koji to izvodi — a `moze_rijesiti()` ga povuce i
+		 * kad posao ima zapreku. Poveznica na pregled stoji uz njega u oba slucaja:
+		 * dok potvrde nema, ona je jedini put dalje.
+		 */
 		if ( Promocija_Popis::broj() > 0 ) {
-			$nalaz->rjesava( 'promocija', __( 'Pretvori u redovnu cijenu', Config::TEXT_DOMAIN ) );
+			$nalaz->rjesava( 'promocija', __( 'Pretvori u redovnu cijenu', Config::TEXT_DOMAIN ) )
+				->ekran( Admin::url( Admin::STRANICA_PROMOCIJA ), __( 'Pogledaj cijene prije i poslije', Config::TEXT_DOMAIN ) );
 		}
 
 		return $nalaz;

@@ -56,6 +56,22 @@ $oznake = array(
 		</p>
 	<?php endif; ?>
 
+	<?php
+	/*
+	 * Posao postoji, ali se sada ne moze pokrenuti — recimo sto nedostaje.
+	 *
+	 * Bez ovoga bi gumb ili stajao i ne radio nista, ili tiho nestao. Oboje ostavlja
+	 * citatelja s dojmom da problem nije stvaran, a jest.
+	 */
+	$zapreka = $nalaz->zapreka_posla();
+	?>
+	<?php if ( '' !== $zapreka ) : ?>
+		<p class="<?php echo esc_attr( Config::css( 'nalaz-prije' ) ); ?>">
+			<strong><?php esc_html_e( 'Prije toga:', Config::TEXT_DOMAIN ); ?></strong>
+			<?php echo esc_html( $zapreka ); ?>
+		</p>
+	<?php endif; ?>
+
 	<p class="<?php echo esc_attr( Config::css( 'nalaz-radnje' ) ); ?>">
 		<?php if ( $nalaz->moze_rijesiti() ) : ?>
 			<form method="post" class="<?php echo esc_attr( Config::css( 'nalaz-obrazac' ) ); ?>">

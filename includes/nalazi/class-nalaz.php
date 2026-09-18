@@ -159,15 +159,45 @@ final class Nalaz {
 	/**
 	 * Smije li se ponuditi gumb za rjesavanje.
 	 *
-	 * Posao koji nije registriran ne postoji za ovaj paket. Nalaz ostaje — problem
-	 * je stvaran i bez nas — ali se ne nudi rjesenje koje ne mozemo izvesti.
+	 * TRI UVJETA, I SVA TRI SU NUZNA
+	 *
+	 * 1. Nalaz uopce imenuje posao.
+	 * 2. Taj je posao registriran u ovom paketu.
+	 * 3. Posao se u ovom trenutku MOZE pokrenuti — nema zapreku.
+	 *
+	 * Treci je dodan nakon sto se pokazalo sto se bez njega dogada: nalaz o cijenama
+	 * s vise od dvije decimale nudio je gumb "Svedi na dvije decimale", posao je
+	 * trazio potvrdu koja jos nije dana, i klik nije mijenjao nista. Nalaz bi se
+	 * pojavio ponovno, jednak kao prije.
+	 *
+	 * Gumb koji ne radi gori je od gumba kojeg nema: prvi put izgleda kao kvar
+	 * dodatka, drugi put kao da problem nije stvaran.
+	 *
+	 * Nalaz ostaje u oba slucaja — problem je stvaran i bez nas. Mijenja se samo to
+	 * nudi li se radnja ili se kaze sto je prije nje potrebno.
 	 */
 	public function moze_rijesiti(): bool {
+		return '' === $this->zapreka_posla() && '' !== $this->posao;
+	}
+
+	/**
+	 * Zasto se posao ne moze pokrenuti sada, ili prazno.
+	 *
+	 * Vraca prazno i kad posla uopce nema — "nema zapreke" nije isto sto i "moze se
+	 * rijesiti", pa se ta dva pitanja postavljaju odvojeno.
+	 */
+	public function zapreka_posla(): string {
 		if ( '' === $this->posao ) {
-			return false;
+			return '';
 		}
 
-		return null !== \CJTR\Poslovi\Registar::nadi( $this->posao );
+		$posao = \CJTR\Poslovi\Registar::nadi( $this->posao );
+
+		if ( null === $posao ) {
+			return '';
+		}
+
+		return (string) $posao->zapreka();
 	}
 
 	public function tezina(): int {

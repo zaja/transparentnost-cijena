@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.3.2
+Stable tag: 1.3.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,15 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.3.3 =
+* Nalaz vise ne nudi gumb za postupak koji se u tom trenutku ne moze pokrenuti.
+  Gumb "Svedi na dvije decimale" stajao je i dok potvrda nije bila dana, pa klik
+  nije mijenjao nista, a nalaz bi se pojavio ponovno — jednak kao prije. Sada na
+  njegovu mjestu pise sto je prije toga potrebno, uz poveznicu na to mjesto.
+* Dvije zapreke imenovale su ekrane kojih vise nema ("Sidrene cijene",
+  "Akcijska u redovnu"). Zapreka sada kaze sto nedostaje, a poveznicu nosi nalaz —
+  ondje gdje se mijenja zajedno s njim.
 
 = 1.3.2 =
 * Novi artikl dobiva sidrenu cijenu odmah, na kraju zahtjeva u kojem je nastao.

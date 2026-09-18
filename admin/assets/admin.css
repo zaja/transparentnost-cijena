@@ -479,3 +479,8 @@
    ekranu Artikli — bili su jedina mjesta koja su ih ispisivala. */
 .cjtr-tanka { margin: 16px 0; border: 0; border-top: 1px solid #f0f0f1; max-width: 900px; }
 .cjtr-podnozje-veze { margin: 26px 0 0; font-size: 12px; color: #8c8f94; }
+
+/* Zasto se nalaz ne moze rijesiti jednim klikom.
+   Stoji na mjestu gdje bi inace bio gumb, jer odgovara na pitanje koje se
+   postavlja upravo ondje. Ime NIJE `nalaz-zapreka` — to je vec vaznost nalaza. */
+.cjtr-nalaz-prije { margin: 10px 0 0; color: #8a6d00; font-size: 13px; max-width: 76ch; }

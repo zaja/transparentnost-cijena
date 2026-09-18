@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.3.3** — nalaz ne nudi gumb za postupak koji se ne može pokrenuti; umjesto njega piše što je prije toga potrebno.
+
 **1.3.2** — novi artikl dobiva sidrenu cijenu odmah po objavi, ne tek pri dnevnom prolazu.
 
 **1.3.1** — ručni unos sidrene cijene više ne pomiče datum na koji se ona odnosi; referentni datum se svugdje čita iz postavki.

@@ -88,7 +88,14 @@ final class Zaokruzi_Cijene extends Posao {
 		$potvrda = self::potvrda();
 
 		if ( empty( $potvrda ) ) {
-			return __( 'Potvrda jos nije dana. Otvorite "Sidrene cijene", pogledajte probni prolaz i potvrdite.', Config::TEXT_DOMAIN );
+			/*
+			 * Zapreka NE IMENUJE EKRAN.
+			 *
+			 * Ranije je pisalo 'Otvorite "Sidrene cijene"' — ekran pod tim imenom
+			 * nestao je s preustrojem sucelja, pa je uputa vodila u nista. Poveznica
+			 * na pravo mjesto stoji na samom nalazu, gdje se i mijenja zajedno s njim.
+			 */
+			return __( 'Potvrda jos nije dana: prvo treba pogledati probni prolaz i potvrditi ga.', Config::TEXT_DOMAIN );
 		}
 
 		$sada = Zaokruzivanje::broj_pogodenih();

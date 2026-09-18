@@ -68,7 +68,8 @@ final class Promocija extends Posao {
 
 		$potvrda = self::potvrda();
 		if ( empty( $potvrda ) ) {
-			return __( 'Potvrda jos nije dana. Otvorite ekran "Akcijska u redovnu", pregledajte cijene prije i poslije i potvrdite.', Config::TEXT_DOMAIN );
+			// Bez imena ekrana — poveznica stoji na nalazu, gdje se i mijenja s njim.
+			return __( 'Potvrda jos nije dana: prvo treba pregledati cijene prije i poslije i potvrditi ih.', Config::TEXT_DOMAIN );
 		}
 
 		// Potvrda vrijedi za skup koji je bio pregledan. Naraste li skup u
