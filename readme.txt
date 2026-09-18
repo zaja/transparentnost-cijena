@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.4.0
+Stable tag: 1.4.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,12 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.4.1 =
+* Broj u nalazu "Cekaju vasu odluku" sada je tocno onaj koji kartica moze
+  rijesiti. Dotad je zbrajao i artikle s oscilirajucom cijenom, koji se rjesavaju
+  drugim putem — dok ih je nula razlika se ne vidi, a cim ih bude, nalaz i kartica
+  tvrdili bi razlicite brojke.
 
 = 1.4.0 =
 * Odluka o sidrenoj cijeni za artikle koji su na referentni datum bili na akciji

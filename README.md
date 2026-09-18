@@ -78,6 +78,8 @@ Detaljno u [PRVO-POSTAVLJANJE.md](PRVO-POSTAVLJANJE.md).
 
 ## Promjene
 
+**1.4.1** — broj u nalazu „Čekaju vašu odluku" jednak je broju koji kartica može riješiti.
+
 **1.4.0** — odluka o sidrenoj cijeni za artikle koji su na referentni datum bili na akciji sada ima vlastitu karticu na ekranu Artikli, sa skupnim upisom.
 
 **1.3.4** — artikl uveden nakon referentnog datuma ne traži unos kad mu je cijena zabilježena; unos se traži još samo kad zapisa uopće nema.

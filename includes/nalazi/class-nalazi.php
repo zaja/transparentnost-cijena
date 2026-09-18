@@ -381,8 +381,18 @@ final class Nalazi {
 	 * odluku u njegovo ime.
 	 */
 	private static function dodatna_ceka_odluku(): ?Nalaz {
-		$stanje = Pregled::stanje();
-		$n      = (int) $stanje['ceka_odluku'];
+		/*
+		 * Broji se TOCNO ono sto kartica moze rijesiti.
+		 *
+		 * `stanje()['ceka_odluku']` zbraja i artikle s oscilirajucom cijenom, koji se
+		 * rjesavaju drugim putem i u toj kartici ne stoje. Dok ih ima nula, razlika
+		 * se ne vidi — a cim ih bude, nalaz bi tvrdio jedan broj, kartica pokazala
+		 * drugi, i citatelj bi opet morao pogadati koji je tocan.
+		 *
+		 * To je upravo prituzba koja je i dovela do ove kartice. Nema smisla popraviti
+		 * odrediste, a ostaviti brojku da se moze razici.
+		 */
+		$n = Pregled::broj_ceka_odluku();
 
 		if ( $n < 1 ) {
 			return null;
