@@ -398,8 +398,8 @@ final class Nalazi {
 				)
 			)
 			->objasnjenje( __( 'Kod njih postoje dvije moguce sidrene cijene: redovna koja je tada vrijedila i akcijska koja se tada naplacivala. Koja je od njih prava, odluka je vlasnika trgovine i dodatak je ne donosi umjesto vas.', Config::TEXT_DOMAIN ) )
-			->postupak( __( 'Pogledajte popis, odlucite koja vrijednost vrijedi i upisite je. Do tada tim artiklima sidrena cijena ostaje prazna.', Config::TEXT_DOMAIN ) )
-			->ekran( Admin::url( Admin::STRANICA_ARTIKLI ), __( 'Otvori artikle', Config::TEXT_DOMAIN ) )
+			->postupak( __( 'Na ekranu Artikli, u kartici "Koja je cijena vrijedila na referentni datum", oznacite artikle i recite koja od dvije vrijednosti vrijedi. Odluka je za vecinu kataloga ista, pa se upisuje skupno. Do tada tim artiklima sidrena cijena ostaje prazna.', Config::TEXT_DOMAIN ) )
+			->ekran( Admin::url( Admin::STRANICA_ARTIKLI ), __( 'Odluci koja cijena vrijedi', Config::TEXT_DOMAIN ) )
 			->popis( Preuzimanje::url( Config::IZVOR_TRAZI_ODLUKU ), __( 'Preuzmi popis (CSV)', Config::TEXT_DOMAIN ) );
 	}
 

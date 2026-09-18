@@ -20,7 +20,7 @@ final class Config {
 	/** Prefiks za tablice, opcije, meta polja, hookove i CSS klase. */
 	const PREFIX = 'cjtr';
 
-	const VERSION     = '1.3.4';
+	const VERSION     = '1.4.0';
 	const TEXT_DOMAIN = 'cjenovna-transparentnost';
 
 	/** Verzija sheme. Podici pri svakoj promjeni tablica. */
@@ -233,6 +233,19 @@ final class Config {
 	const IZVOR_ODLUKA_POTVRDENA_POVIJESCU = 'odluka_potvrdena_povijescu';
 
 	/**
+	 * Vlasnik je odlucio koja je od dvije moguce vrijednosti sidrena cijena.
+	 *
+	 * Artikl koji je na referentni datum bio na akciji ima dvije: redovnu koja je
+	 * tada vrijedila i akcijsku koja se tada naplacivala. Koja od njih je sidrena,
+	 * podatak ne moze reci — obje su tocne, pitanje je koju trgovac vodi kao svoju.
+	 *
+	 * Razlika prema `IZVOR_ODLUKA_POTVRDENA_POVIJESCU`: ondje je odluku POTVRDIO i
+	 * zapis o cijenama. Ovdje je odluka sama za sebe, i tako se i biljezi — ne
+	 * pripisuje joj se potvrda koje nema.
+	 */
+	const IZVOR_ODLUKA_TRGOVCA = 'odluka_trgovca';
+
+	/**
 	 * Izvori koji NE ulaze u popis zadataka za rucni unos.
 	 *
 	 * Prazna sidrena cijena kod ovih izvora je tocan ishod, ne manjak podatka.
@@ -256,6 +269,9 @@ final class Config {
 	const IZVORI_KOJE_POSAO_NE_PREPISUJE = array(
 		self::IZVOR_POVIJEST_POTVRDENA_REDOVNOM,
 		self::IZVOR_ODLUKA_POTVRDENA_POVIJESCU,
+		// Odluka vlasnika nije automatski izvor. Ponovno izvodenje posla vratilo bi
+		// artikl u "ceka odluku" i obrisalo ono sto je covjek odlucio.
+		self::IZVOR_ODLUKA_TRGOVCA,
 	);
 
 	/** Dokazna snaga sidrene cijene. */
@@ -297,6 +313,7 @@ final class Config {
 		self::IZVOR_POVIJEST                    => 3,
 		self::IZVOR_POVIJEST_POTVRDENA_REDOVNOM => 4,
 		self::IZVOR_ODLUKA_POTVRDENA_POVIJESCU  => 4,
+		self::IZVOR_ODLUKA_TRGOVCA              => 4,
 	);
 
 	/**
@@ -1146,6 +1163,10 @@ final class Config {
 		self::IZVOR_ODLUKA_POTVRDENA_POVIJESCU => array(
 			'naslov' => 'Utvrdeno odlukom, potvrdeno zapisom',
 			'opis'   => 'Ovi artikli bili su vodeni kao akcija, a vlasnik trgovine potvrdio je da je cijena koja se naplacuje njegova redovna cijena. Akcija je ukinuta, a zapis o cijenama potvrduje istu vrijednost. Dodatna cijena je upisana i ne treba nista poduzeti.',
+		),
+		self::IZVOR_ODLUKA_TRGOVCA => array(
+			'naslov' => 'Utvrdeno vasom odlukom',
+			'opis'   => 'Ovi artikli bili su na akciji na referentni datum, pa su imali dvije moguce sidrene cijene. Odlucili ste koja od njih vrijedi i ta je upisana.',
 		),
 		self::IZVOR_TRAZI_ODLUKU => array(
 			'naslov' => 'Ceka vasu odluku',

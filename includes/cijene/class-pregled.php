@@ -91,6 +91,60 @@ final class Pregled {
 		);
 	}
 
+	/**
+	 * Artikli koji cekaju odluku, s OBA kandidata.
+	 *
+	 * Popis postoji da bi odluka imala gdje biti donesena. Dok ga nije bilo, nalaz
+	 * je govorio "pogledajte popis i odlucite", a gumb je vodio na ekran s posve
+	 * drugom tablicom — onom o nazivu tekuce akcije. Dva razlicita pitanja koja su
+	 * izgledala kao jedno.
+	 *
+	 * @return object[]
+	 */
+	public static function ceka_odluku( int $limit = 50, int $offset = 0 ): array {
+		global $wpdb;
+
+		$podaci = Config::table( Config::TABLE_PODACI );
+
+		return (array) $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT c.entity_id,
+				        c.sidrena_kandidat_regular   AS redovna,
+				        c.sidrena_kandidat_efektivna AS akcijska,
+				        c.referentni_datum,
+				        COALESCE( NULLIF( p.post_title, '' ), par.post_title ) AS naziv,
+				        COALESCE( l.sku, '' ) AS sku
+				   FROM `{$podaci}` c
+				   JOIN {$wpdb->posts} p ON p.ID = c.entity_id
+			  LEFT JOIN {$wpdb->posts} par ON par.ID = p.post_parent
+			  LEFT JOIN {$wpdb->prefix}wc_product_meta_lookup l ON l.product_id = p.ID
+				  WHERE c.sidrena_izvor = %s
+				    AND c.sidrena_kandidat_regular IS NOT NULL
+				    AND c.sidrena_kandidat_efektivna IS NOT NULL
+			   ORDER BY c.entity_id ASC
+				  LIMIT %d OFFSET %d",
+				Config::IZVOR_TRAZI_ODLUKU,
+				$limit,
+				$offset
+			) // phpcs:ignore
+		);
+	}
+
+	/** Koliko ih ukupno ceka odluku. */
+	public static function broj_ceka_odluku(): int {
+		global $wpdb;
+
+		return (int) $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT COUNT(*) FROM `' . Config::table( Config::TABLE_PODACI ) . '`
+				 WHERE sidrena_izvor = %s
+				   AND sidrena_kandidat_regular IS NOT NULL
+				   AND sidrena_kandidat_efektivna IS NOT NULL',
+				Config::IZVOR_TRAZI_ODLUKU
+			) // phpcs:ignore
+		);
+	}
+
 	/** Redovi zapisnika, onim redoslijedom kojim idu u log posla. */
 	public static function redci_zapisnika(): array {
 		$s = self::stanje();

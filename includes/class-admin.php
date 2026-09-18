@@ -280,6 +280,10 @@ final class Admin {
 		// nego ga itko imenuje, i upravo njega trgovac treba vidjeti.
 		$posebna = Povijest\Vrsta_Prodaje::u_posebnoj_prodaji();
 
+		// Artikli koji cekaju odluku koja je od dvije vrijednosti sidrena cijena.
+		$odluke_ukupno = Cijene\Pregled::broj_ceka_odluku();
+		$odluke        = ( $odluke_ukupno > 0 ) ? Cijene\Pregled::ceka_odluku( 50 ) : array();
+
 		require CJTR_DIR . 'admin/views/artikli.php';
 	}
 
@@ -456,6 +460,10 @@ final class Admin {
 			return self::spremi_oblike_prodaje();
 		}
 
+		if ( 'odluka_sidrene' === $radnja ) {
+			return self::spremi_odluku_sidrene();
+		}
+
 		if ( 'pokupi' === $radnja ) {
 			$s = Poslovi\Pokretac::pokreni( 'prikupi_podatke' );
 			return ( '' !== $s->poruka ) ? $s->poruka : __( 'Pokrenuto — pokupit cemo sto trgovina vec ima.', Config::TEXT_DOMAIN );
@@ -464,6 +472,70 @@ final class Admin {
 		// Nepoznata radnja ne radi nista. Ranije je ovdje bio pad na spremi_retke(),
 		// koji je citao $_POST['r'] — obrasca s tim poljima na ovom ekranu vise nema.
 		return '';
+	}
+
+	/**
+	 * Odluka koja je od dvije vrijednosti sidrena cijena.
+	 *
+	 * Ne mijenja nijednu cijenu u trgovini — bira koja se brojka objavljuje kao
+	 * cijena na referentni datum. Zato ide kroz `Sidrena_Unos`, koji pazi da se
+	 * jaci izvor ne prepise slabijim, a ne kroz posao koji dira proizvode.
+	 */
+	private static function spremi_odluku_sidrene(): string {
+		$odabrani = isset( $_POST['odluka_odabrani'] ) && is_array( $_POST['odluka_odabrani'] )
+			? array_map( 'absint', wp_unslash( $_POST['odluka_odabrani'] ) )
+			: array();
+
+		$koja = isset( $_POST['odluka_koja'] ) ? sanitize_key( wp_unslash( $_POST['odluka_koja'] ) ) : '';
+
+		if ( empty( $odabrani ) ) {
+			return __( 'Nijedan artikl nije oznacen, pa nista nije upisano.', Config::TEXT_DOMAIN );
+		}
+
+		if ( ! in_array( $koja, array( 'redovna', 'akcijska' ), true ) ) {
+			return __( 'Nije odabrano koja cijena vrijedi.', Config::TEXT_DOMAIN );
+		}
+
+		$upisano = 0;
+		$poruke  = array();
+
+		foreach ( Cijene\Pregled::ceka_odluku( count( $odabrani ) + 50 ) as $o ) {
+			$id = (int) $o->entity_id;
+
+			if ( ! in_array( $id, $odabrani, true ) ) {
+				continue;
+			}
+
+			$vrijednost = ( 'redovna' === $koja ) ? $o->redovna : $o->akcijska;
+
+			$ishod = Podaci\Sidrena_Unos::upisi(
+				$id,
+				(string) $vrijednost,
+				Config::IZVOR_ODLUKA_TRGOVCA,
+				( 'redovna' === $koja )
+					? __( 'odluka vlasnika: vrijedi redovna cijena s referentnog datuma', Config::TEXT_DOMAIN )
+					: __( 'odluka vlasnika: vrijedi akcijska cijena koja se tada naplacivala', Config::TEXT_DOMAIN )
+			);
+
+			if ( empty( $ishod['ok'] ) ) {
+				$poruke[] = sprintf( '#%d: %s', $id, $ishod['poruka'] );
+				continue;
+			}
+
+			$upisano++;
+		}
+
+		Nalazi\Nalazi::zaboravi();
+
+		$poruka = sprintf(
+			/* translators: %d = broj artikala */
+			__( 'Upisano za %d artikala.', Config::TEXT_DOMAIN ),
+			$upisano
+		);
+
+		$poruke = array_unique( array_filter( $poruke ) );
+
+		return trim( $poruka . ' ' . implode( ' ', array_slice( $poruke, 0, 3 ) ) );
 	}
 
 	/** Korak 1: datoteka je poslana, citamo samo zaglavlje. */

@@ -87,6 +87,88 @@ $polja_uvoza = array(
 		<?php endif; ?>
 	</div>
 
+	<?php /* ================= ODLUKA O SIDRENOJ CIJENI ================= */ ?>
+	<?php if ( ! empty( $odluke ) ) : ?>
+		<div class="<?php echo esc_attr( Config::css( 'kartica' ) ); ?>">
+			<h2><?php esc_html_e( 'Koja je cijena vrijedila na referentni datum', Config::TEXT_DOMAIN ); ?></h2>
+
+			<p class="<?php echo esc_attr( Config::css( 'uvod' ) ); ?>">
+				<?php
+				printf(
+					/* translators: 1: broj artikala, 2: referentni datum */
+					esc_html__( 'Ovih %1$s artikala bilo je na akciji %2$s, pa imaju dvije moguce sidrene cijene: redovnu koja je tada vrijedila i akcijsku koja se tada naplacivala. Obje su tocne — pitanje je koju vodite kao svoju. Dodatak tu odluku ne donosi umjesto vas, a dok je nema, tim artiklima sidrena cijena ostaje prazna.', Config::TEXT_DOMAIN ),
+					esc_html( number_format_i18n( $odluke_ukupno ) ),
+					esc_html( wp_date( 'j.n.Y.', strtotime( \CJTR\Postavke::ref_datum() ) ) )
+				);
+				?>
+			</p>
+
+			<p class="<?php echo esc_attr( Config::css( 'napomena' ) ); ?>">
+				<?php esc_html_e( 'Ovo NIJE isto sto i naziv akcije nize. Ondje se imenuje snizenje koje traje danas; ovdje se bira brojka koja se objavljuje kao cijena na referentni datum. Cijene u trgovini se ne mijenjaju ni u jednom slucaju.', Config::TEXT_DOMAIN ); ?>
+			</p>
+
+			<form method="post">
+				<?php wp_nonce_field( Config::nonce( 'artikli' ) ); ?>
+
+				<table class="<?php echo esc_attr( Config::css( 'stavke' ) ); ?>">
+					<thead>
+						<tr>
+							<th scope="col"><input type="checkbox" onclick="this.closest('table').querySelectorAll('input[name^=odluka_odabrani]').forEach(function(k){k.checked=this.checked;}.bind(this));"></th>
+							<th scope="col"><?php esc_html_e( 'Artikl', Config::TEXT_DOMAIN ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Redovna tada', Config::TEXT_DOMAIN ); ?></th>
+							<th scope="col"><?php esc_html_e( 'Akcijska tada', Config::TEXT_DOMAIN ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $odluke as $o ) : ?>
+							<?php $oid = (int) $o->entity_id; ?>
+							<tr>
+								<td><input type="checkbox" name="odluka_odabrani[]" value="<?php echo $oid; ?>"></td>
+								<td>
+									<?php echo esc_html( mb_substr( (string) $o->naziv, 0, 45 ) ); ?>
+									<span class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
+										<?php echo esc_html( '' !== $o->sku ? $o->sku : '#' . $oid ); ?>
+									</span>
+								</td>
+								<td><?php echo esc_html( number_format_i18n( (float) $o->redovna, 2 ) ); ?></td>
+								<td><?php echo esc_html( number_format_i18n( (float) $o->akcijska, 2 ) ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+
+				<p>
+					<label>
+						<?php esc_html_e( 'Za oznacene uzmi:', Config::TEXT_DOMAIN ); ?>
+						<select name="odluka_koja">
+							<option value="redovna"><?php esc_html_e( 'redovnu cijenu', Config::TEXT_DOMAIN ); ?></option>
+							<option value="akcijska"><?php esc_html_e( 'akcijsku cijenu (onu koja se naplacivala)', Config::TEXT_DOMAIN ); ?></option>
+						</select>
+					</label>
+					<button class="button button-primary" name="radnja" value="odluka_sidrene">
+						<?php esc_html_e( 'Upisi kao sidrenu cijenu', Config::TEXT_DOMAIN ); ?>
+					</button>
+				</p>
+
+				<?php if ( $odluke_ukupno > count( $odluke ) ) : ?>
+					<p class="<?php echo esc_attr( Config::css( 'sitno' ) ); ?>">
+						<?php
+						printf(
+							/* translators: 1: prikazano, 2: ukupno */
+							esc_html__( 'Prikazano prvih %1$s od %2$s. Odluka je za vecinu ista za cijeli katalog — oznacite sve na ovoj stranici, upisite, pa ucitajte sljedecu.', Config::TEXT_DOMAIN ),
+							esc_html( number_format_i18n( count( $odluke ) ) ),
+							esc_html( number_format_i18n( $odluke_ukupno ) )
+						);
+						?>
+						<a href="<?php echo esc_url( Preuzimanje::url( Config::IZVOR_TRAZI_ODLUKU ) ); ?>">
+							<?php esc_html_e( 'Preuzmi cijeli popis (CSV)', Config::TEXT_DOMAIN ); ?>
+						</a>
+					</p>
+				<?php endif; ?>
+			</form>
+		</div>
+	<?php endif; ?>
+
 	<?php /* ================== POSEBNI OBLICI PRODAJE ================== */ ?>
 	<?php if ( ! empty( $posebna ) ) : ?>
 		<div class="<?php echo esc_attr( Config::css( 'kartica' ) ); ?>">

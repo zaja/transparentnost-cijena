@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.3.4
+Stable tag: 1.4.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,18 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.4.0 =
+* Odluka o sidrenoj cijeni za artikle koji su na referentni datum bili na akciji
+  sada ima gdje biti donesena. Ekran Artikli dobio je karticu "Koja je cijena
+  vrijedila na referentni datum" s oba kandidata i skupnim upisom — oznacite
+  artikle i recite vrijedi li redovna ili akcijska.
+* Dotad je nalaz govorio "pogledajte popis i odlucite", a gumb je vodio na ekran
+  s posve drugom tablicom: onom o nazivu tekuce akcije. Dva razlicita pitanja
+  izgledala su kao jedno, a odluka se nije imala gdje donijeti.
+* Odluka se biljezi kao vlastiti izvor i ponovno pokretanje posla je vise ne
+  prepisuje. Cijene u trgovini se ne mijenjaju — bira se samo koja se brojka
+  objavljuje.
 
 = 1.3.4 =
 * Artikl uveden nakon referentnog datuma vise ne trazi unos kad mu je cijena
