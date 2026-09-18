@@ -39,6 +39,10 @@ final class Plugin {
 
 		Poslovi\Raspored::init();
 
+		// Novi artikl dobiva sidrenu cijenu na kraju zahtjeva u kojem je nastao,
+		// ne tek pri sljedecem dnevnom prolazu.
+		Poslovi\Poslovi\Sidrena_Novi_Artikli::init();
+
 		// Rezerva za trgovinu bez crona: promet gura obradu nakon odgovora.
 		Poslovi\Promet::init();
 

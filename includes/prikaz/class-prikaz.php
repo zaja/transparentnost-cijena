@@ -327,6 +327,10 @@ final class Prikaz {
 	 */
 	public static function zaboravi(): void {
 		self::$predmemorija = array();
+
+		// I sloj ispod: bez toga mjerenje koje artikl ispituje u vise stanja dobije
+		// sidrenu cijenu od prije promjene, a `Prikaz` bi izgledao kriv.
+		Sidrena::zaboravi();
 	}
 
 	public static function stilovi(): void {

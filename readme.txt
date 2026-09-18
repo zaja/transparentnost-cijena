@@ -7,7 +7,7 @@ Tested up to: 7.1
 Requires PHP: 7.4
 WC requires at least: 7.0
 WC tested up to: 11.1
-Stable tag: 1.3.1
+Stable tag: 1.3.2
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -156,6 +156,14 @@ Ako artikla nema u evidenciji, prikaza nema ni na koji nacin. To pise na ekranu
 Stanje, s popisom.
 
 == Changelog ==
+
+= 1.3.2 =
+* Novi artikl dobiva sidrenu cijenu odmah, na kraju zahtjeva u kojem je nastao.
+  Dotad ju je dobivao tek pri dnevnom prolazu u 05:30, pa bi artikl objavljen u
+  podne pola dana stajao bez obveznog podatka — i to bez ijedne poruke. Dnevni
+  prolaz ostaje kao mreza ispod toga.
+* Ciscenje predmemorije prikaza sada cisti i sloj ispod. Bez toga bi mjerenje
+  koje isti artikl ispituje u vise stanja dobilo sidrenu cijenu od prije promjene.
 
 = 1.3.1 =
 * Rucni unos sidrene cijene vise ne pomice datum na koji se ona odnosi. Kod

@@ -22,6 +22,11 @@ final class Sidrena {
 	/** @var array<int,float|null> */
 	private static $predmemorija = array();
 
+	/** Zaboravi procitano — vidi `Prikaz::zaboravi()`. */
+	public static function zaboravi(): void {
+		self::$predmemorija = array();
+	}
+
 	/** Dodatna cijena jednog entiteta, ili null ako se ne prikazuje. */
 	public static function za( int $entity_id ): ?float {
 		if ( array_key_exists( $entity_id, self::$predmemorija ) ) {

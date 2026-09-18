@@ -26,6 +26,16 @@
  * njemu sidrenu cijenu treba potraziti u povijesti, sto radi veliki posao. Ovdje
  * dobiva redak koji kaze da ceka, da ne bi ostao nevidljiv.
  *
+ * ZASTO NE CEKA SUTRA UJUTRO
+ *
+ * Dnevni prolaz je mreza, ne glavni put. Artikl objavljen u podne inace ne bi imao
+ * sidrenu cijenu do 05:30 sljedeceg dana — obvezni podatak bi na stranici falio
+ * pola dana, i to bez ijedne poruke.
+ *
+ * Zato se isti racun radi i ODMAH, na kraju zahtjeva u kojem je artikl nastao.
+ * Kasni se za biljeznikom (`shutdown` 5), jer se prva cijena cita iz zapisa koji
+ * on upravo pise. Kosta jedan upit, i to samo u zahtjevu koji je stvorio proizvod.
+ *
  * @package CJTR
  */
 
@@ -42,6 +52,79 @@ use CJTR\Poslovi\Rezultat_Komada;
 defined( 'ABSPATH' ) || exit;
 
 final class Sidrena_Novi_Artikli extends Posao {
+
+	/** @var array<int,bool> artikli nastali u ovom zahtjevu */
+	private static $novi = array();
+
+	/** @var bool */
+	private static $zakazano = false;
+
+	public static function init(): void {
+		add_action( 'woocommerce_new_product', array( __CLASS__, 'zapamti' ) );
+		add_action( 'woocommerce_new_product_variation', array( __CLASS__, 'zapamti' ) );
+	}
+
+	/**
+	 * Zapamti novi artikl; racun ide na kraj zahtjeva.
+	 *
+	 * @param int $id
+	 */
+	public static function zapamti( $id ): void {
+		$id = (int) $id;
+
+		if ( $id <= 0 ) {
+			return;
+		}
+
+		self::$novi[ $id ] = true;
+
+		if ( self::$zakazano ) {
+			return;
+		}
+
+		self::$zakazano = true;
+
+		// Prioritet 15: biljeznik pise na 5, a nama treba zapis koji on upisuje.
+		add_action( 'shutdown', array( __CLASS__, 'odmah' ), 15 );
+	}
+
+	/** Klasificiraj artikle nastale u ovom zahtjevu. */
+	public static function odmah(): void {
+		$novi       = array_keys( self::$novi );
+		self::$novi = array();
+
+		foreach ( $novi as $id ) {
+			self::za_artikl( (int) $id );
+		}
+	}
+
+	/**
+	 * Sidrena cijena za jedan artikl koji jos nema redak.
+	 *
+	 * @return bool je li redak nastao
+	 */
+	public static function za_artikl( int $id ): bool {
+		global $wpdb;
+
+		$nastao = get_post_field( 'post_date', $id );
+
+		if ( ! $nastao ) {
+			return false;
+		}
+
+		$ima = $wpdb->get_var(
+			$wpdb->prepare(
+				'SELECT 1 FROM `' . Config::table( Config::TABLE_PODACI ) . '` WHERE entity_id = %d',
+				$id
+			) // phpcs:ignore
+		);
+
+		if ( null !== $ima ) {
+			return false;
+		}
+
+		return self::upisi( $id, (string) $nastao, Postavke::ref_datum(), Zapis::prvi( $id ) );
+	}
 
 	public function kljuc(): string {
 		return 'sidrena_novi';
@@ -108,7 +191,7 @@ final class Sidrena_Novi_Artikli extends Posao {
 		$ref_opci = Postavke::ref_datum();
 
 		foreach ( $redci as $r ) {
-			$this->upisi( (int) $r->ID, (string) $r->post_date, $ref_opci, $prvi[ (int) $r->ID ] ?? null );
+			self::upisi( (int) $r->ID, (string) $r->post_date, $ref_opci, $prvi[ (int) $r->ID ] ?? null );
 		}
 
 		return $rez;
@@ -132,7 +215,7 @@ final class Sidrena_Novi_Artikli extends Posao {
 	/**
 	 * @param object|null $prvi prvi zapis o cijeni, ako ga ima
 	 */
-	private function upisi( int $id, string $nastao, string $ref_opci, $prvi ): void {
+	private static function upisi( int $id, string $nastao, string $ref_opci, $prvi ): bool {
 		global $wpdb;
 
 		$sada = current_time( 'mysql', true );
@@ -191,5 +274,7 @@ final class Sidrena_Novi_Artikli extends Posao {
 				)
 			) . ' )' // phpcs:ignore
 		);
+
+		return $wpdb->rows_affected > 0;
 	}
 }
